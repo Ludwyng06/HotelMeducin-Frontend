@@ -1,56 +1,186 @@
-# 🏨 Hotel Meducin - Sitio Web
+# 🏨 Hotel Meducin - Frontend
 
-Sitio web moderno para el **Hotel Meducin**, diseñado para ofrecer una experiencia visual atractiva y funcional tanto para visitantes como para administradores. Presenta secciones informativas, galería de habitaciones, formularios de contacto y una interfaz clara para reservas.
+## 📋 Descripción del Proyecto
 
----
+Sistema frontend para la gestión integral del Hotel Meducin, desarrollado con **Next.js**, **React** y **TypeScript**. Implementa autenticación JWT, gestión de reservaciones, habitaciones y servicios del hotel con una interfaz moderna y responsive.
+
+## 🛠️ Tecnologías Utilizadas
+
+- **Next.js** - Framework de React
+- **React** - Biblioteca de JavaScript
+- **TypeScript** - Lenguaje de programación
+- **CSS3** - Estilos personalizados
+- **Axios** - Cliente HTTP
+- **Context API** - Gestión de estado
+
+## 📦 Instalación y Dependencias
+
+### Prerrequisitos
+- Node.js (v18 o superior)
+- npm o yarn
+
+### Instalación de Dependencias
+
+```bash
+# Instalar dependencias del proyecto
+npm install
+
+# Instalar dependencias globales (opcional)
+npm install -g next
+```
+
+### Dependencias Principales
+```json
+{
+  "next": "^14.0.0",
+  "react": "^18.0.0",
+  "react-dom": "^18.0.0",
+  "typescript": "^5.0.0",
+  "axios": "^1.0.0",
+  "@types/react": "^18.0.0",
+  "@types/node": "^20.0.0"
+}
+```
+
+## 🚀 Comandos para Ejecutar el Servidor
+
+### Desarrollo
+```bash
+# Ejecutar en modo desarrollo
+npm run dev
+
+# Ejecutar con hot reload
+npm run dev -- --turbo
+```
+
+### Producción
+```bash
+# Compilar el proyecto
+npm run build
+
+# Ejecutar en producción
+npm run start
+```
+
+### Otros Comandos
+```bash
+# Linting
+npm run lint
+
+# Verificar tipos TypeScript
+npm run type-check
+```
+
+## 🌐 Configuración del Frontend
+
+### Variables de Entorno
+Crear archivo `.env.local` en la raíz del proyecto:
+
+```env
+# API Backend
+NEXT_PUBLIC_API_URL=http://localhost:3000
+
+# Configuración de la aplicación
+NEXT_PUBLIC_APP_NAME=Hotel Meducin
+NEXT_PUBLIC_APP_VERSION=1.0.0
+```
+
+## 📡 Páginas y Rutas del Frontend
+
+### 🏠 Páginas Principales
+```
+/                           # Página de inicio
+/about                      # Sobre nosotros
+/contact                    # Contacto
+/rooms                      # Lista de habitaciones
+/reservations               # Sistema de reservaciones
+```
+
+### 🔐 Autenticación
+```
+/login                      # Iniciar sesión
+/register                   # Registro de usuario
+/user/profile               # Perfil del usuario
+```
+
+### 🛎️ Reservaciones
+```
+/reservations               # Categorías de habitaciones
+/reservations/formulario    # Formulario de reserva
+/reservations/confirmacion  # Confirmación de reserva
+```
+
+### 🏊 Servicios del Hotel
+```
+/services                   # Servicios principales
+/services/restaurantes      # Restaurantes
+/services/spa-bienestar     # Spa y bienestar
+/services/piscina-y-gimnasio # Piscina y gimnasio
+```
+
+### 🏠 Habitaciones
+```
+/rooms                      # Lista de habitaciones
+/rooms/[id]                 # Detalle de habitación
+/rooms/[id]/reserve         # Reservar habitación
+```
+
+## 🎨 Características del Frontend
+
+### ✅ **Funcionalidades Implementadas:**
+- **🔐 Autenticación JWT** con Context API
+- **📱 Diseño responsive** para móviles y desktop
+- **🏠 Gestión de habitaciones** con galería de imágenes
+- **🛎️ Sistema de reservaciones** con calendario de disponibilidad
+- **🏊 Servicios del hotel** con páginas dedicadas
+- **👤 Perfil de usuario** con gestión de reservas
+- **🎨 Interfaz moderna** con CSS personalizado
+
+### 🎯 **Componentes Principales:**
+- **Header/Navbar** - Navegación principal
+- **RoomCard** - Tarjetas de habitaciones
+- **ReservationForm** - Formulario de reservas
+- **AvailabilityCalendar** - Calendario de disponibilidad
+- **AuthContext** - Gestión de autenticación
+- **ProtectedRoute** - Rutas protegidas
+
+## 🔧 Estructura del Proyecto
+
+```
+src/
+├── app/
+│   ├── components/         # Componentes reutilizables
+│   ├── context/           # Context API (Auth, Theme)
+│   ├── hooks/             # Custom hooks
+│   ├── services/          # Servicios de API
+│   ├── styles/            # Archivos CSS
+│   ├── types/             # Tipos TypeScript
+│   ├── utils/             # Utilidades
+│   ├── login/             # Página de login
+│   ├── register/          # Página de registro
+│   ├── reservations/      # Sistema de reservaciones
+│   ├── rooms/             # Gestión de habitaciones
+│   ├── services/          # Servicios del hotel
+│   └── user/              # Perfil de usuario
+├── public/
+│   └── images/            # Imágenes del proyecto
+└── middleware.ts          # Middleware de Next.js
+```
 
 ## 🚀 Inicio Rápido
 
-```bash
-npm install
-npm run dev
+1. **Clonar el repositorio**
+2. **Instalar dependencias**: `npm install`
+3. **Configurar variables de entorno** en `.env.local`
+4. **Ejecutar el servidor**: `npm run dev`
+5. **Acceder a**: `http://localhost:4200`
 
-[!NOTE¡] El proyecto se inicia con npm run dev, lo que arranca un servidor de desarrollo local (por defecto en http://localhost:3000).
+## 📝 Notas Importantes
 
-structura Principal
-pages/ → Contiene las páginas del sitio como:
-
-index.tsx: Página de inicio
-
-about.tsx: Página Sobre Nosotros
-
-rooms.tsx: Lista de habitaciones con fotos y descripciones
-
-reservations.tsx: Formulario de reserva
-
-styles/ → Archivos CSS personalizados (como pages.css)
-
-public/images/ → Almacena las imágenes usadas en el sitio (habitaciones, login, fachada, etc.)
-
-[!TIP] Puedes agregar nuevas imágenes en public/images/ y referenciarlas directamente con rutas como /images/nombre.jpg.
-
-✨ Características
-Diseño responsive (adaptado a dispositivos móviles)
-
-Galería visual de habitaciones
-
-Sistema de navegación entre secciones
-
-Formulario de reservas funcional
-
-Estilizado moderno con CSS personalizado
-
-📸 Captura de Imagen
-<img src="/images/login.jpg" alt="Vista del Lobby" />
-[!IMPORTANT] Asegúrate de que todas las imágenes estén dentro del directorio public/images/ para que Next.js pueda servirlas correctamente.
-
-
-✅ Próximas mejoras
-Conexión con base de datos para guardar reservas
-
-Autenticación de usuarios (admin)
-
-Panel administrativo para gestión de habitaciones
-
-📬 Contacto
-Si deseas contribuir, sugerir una mejora o simplemente dar feedback, ¡eres bienvenido/a! 😄
+- El frontend se ejecuta en el puerto **4200** por defecto
+- Se conecta al backend en `http://localhost:3000`
+- **Todas las rutas protegidas** requieren autenticación JWT
+- **Rutas públicas**: `/`, `/about`, `/contact`, `/login`, `/register`
+- **Rutas protegidas**: `/user/profile`, `/reservations`, `/rooms`
+- Las imágenes se almacenan en `public/images/`
+- Los estilos están en `src/app/styles/`
