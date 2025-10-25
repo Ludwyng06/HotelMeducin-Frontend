@@ -1,11 +1,5 @@
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function ContactanosRedirect() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace("/contact");
-  }, [router]);
-  return null;
+  redirect("/contact");
 } 

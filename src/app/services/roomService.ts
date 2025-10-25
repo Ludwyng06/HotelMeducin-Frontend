@@ -1,33 +1,170 @@
 import API from './api';
-import { Room } from "@/app/types/room";
+import { Room } from "@/app/types/Room";
+
+export interface RoomWithCategory extends Room {
+  categoryId: {
+    _id: string;
+    name: string;
+    code: string;
+    icon: string;
+    basePrice: number;
+    maxCapacity: number;
+  };
+  roomNumber: string;
+  floor: number;
+  view: string;
+  isMaintenance: boolean;
+}
+
+export interface RoomFilters {
+  checkIn?: string;
+  checkOut?: string;
+  capacity?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  bedType?: string;
+  floor?: number;
+  view?: string;
+  categoryId?: string;
+  amenities?: string[];
+}
 
 export const roomService = {
-  getAllRooms: async () => {
-    const response = await API.get('/rooms');
-    return response.data;
+  // Obtener todas las habitaciones
+  getAllRooms: async (): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get('/rooms');
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitaciones:', error);
+      throw error;
+    }
   },
 
-  getRoomById: async (id: number) => {
-    const response = await API.get(`/rooms/${id}`);
-    return response.data;
+  // Obtener habitaciones disponibles
+  getAvailableRooms: async (): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get('/rooms?available=true');
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitaciones disponibles:', error);
+      throw error;
+    }
   },
 
-  searchRooms: async (params: any) => {
-    const response = await API.get('/rooms/search', { params });
-    return response.data;
+  // Obtener habitación por ID
+  getRoomById: async (id: string | number): Promise<RoomWithCategory> => {
+    try {
+      const response = await API.get(`/rooms/${id}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitación:', error);
+      throw error;
+    }
   },
 
-  checkAvailability: async (roomId: number, checkIn: string, checkOut: string) => {
-    const response = await API.get('/rooms/availability', {
-      params: { roomId, checkIn, checkOut },
-    });
-    return response.data;
+  // Obtener habitación por número
+  getRoomByNumber: async (roomNumber: string): Promise<RoomWithCategory> => {
+    try {
+      const response = await API.get(`/rooms/number/${roomNumber}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitación por número:', error);
+      throw error;
+    }
   },
 
-  getBookedDates: async (roomId: number) => {
-    const response = await API.get(`/rooms/${roomId}/booked-dates`);
-    return response.data;
+  // Obtener habitaciones por categoría
+  getRoomsByCategory: async (categoryId: string): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get(`/rooms/category/${categoryId}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitaciones por categoría:', error);
+      throw error;
+    }
   },
+
+  // Obtener habitaciones por piso
+  getRoomsByFloor: async (floor: number): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get(`/rooms/floor/${floor}`);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitaciones por piso:', error);
+      throw error;
+    }
+  },
+
+  // Buscar habitaciones con filtros
+  searchRooms: async (filters: RoomFilters): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get('/rooms/search', { params: filters });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al buscar habitaciones:', error);
+      throw error;
+    }
+  },
+
+  // Verificar disponibilidad de habitación
+  checkAvailability: async (roomId: string | number, checkIn: string, checkOut: string) => {
+    try {
+      const response = await API.get('/rooms/availability', {
+        params: { roomId, checkIn, checkOut },
+      });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al verificar disponibilidad:', error);
+      throw error;
+    }
+  },
+
+  // Obtener habitaciones disponibles por fechas
+  getAvailableRoomsByDates: async (checkIn: string, checkOut: string): Promise<RoomWithCategory[]> => {
+    try {
+      const response = await API.get('/rooms/available-by-dates', {
+        params: { checkIn, checkOut },
+      });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener habitaciones disponibles por fechas:', error);
+      throw error;
+    }
+  },
+
+  // Obtener estadísticas de habitaciones (solo admin)
+  getRoomStats: async (): Promise<any[]> => {
+    try {
+      const response = await API.get('/rooms/admin/stats');
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al obtener estadísticas de habitaciones:', error);
+      throw error;
+    }
+  },
+
+  // Actualizar disponibilidad de habitación (solo admin)
+  updateAvailability: async (id: string, isAvailable: boolean) => {
+    try {
+      const response = await API.patch(`/rooms/${id}/availability`, { isAvailable });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al actualizar disponibilidad:', error);
+      throw error;
+    }
+  },
+
+  // Establecer mantenimiento de habitación (solo admin)
+  setMaintenance: async (id: string, isMaintenance: boolean) => {
+    try {
+      const response = await API.patch(`/rooms/${id}/maintenance`, { isMaintenance });
+      return response.data.data || response.data;
+    } catch (error) {
+      console.error('Error al establecer mantenimiento:', error);
+      throw error;
+    }
+  }
 };
 
 // Mock temporal, reemplazar por fetch real a la API

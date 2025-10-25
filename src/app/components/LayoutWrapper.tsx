@@ -2,11 +2,13 @@
 "use client";
 import "../styles/LayoutWrapper.css"; // Asegúrate de importar los estilos necesarios
 
-import { ReactNode } from "react";
+import { ReactNode, lazy, Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Header from "./Header";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+
+// Lazy load de componentes pesados
+const Footer = lazy(() => import("./Footer"));
+const Navbar = lazy(() => import("./Navbar"));
 
 export default function LayoutWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -15,9 +17,17 @@ export default function LayoutWrapper({ children }: { children: ReactNode }) {
   return (
     <div className="layout-wrapper">
       {!hide && <Header />}
-      {!hide && <Navbar />}
+      {!hide && (
+        <Suspense fallback={<div className="navbar-skeleton" style={{height: '60px', background: '#f0f0f0'}} />}>
+          <Navbar />
+        </Suspense>
+      )}
       <div className="main-content">{children}</div>
-      {!hide && <Footer />}
+      {!hide && (
+        <Suspense fallback={<div className="footer-skeleton" style={{height: '200px', background: '#f0f0f0'}} />}>
+          <Footer />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -1,45 +1,50 @@
-import {withSentryConfig} from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /* config options here */
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:4200',
+  },
+  // Configuración explícita para evitar conflictos con rutas de API
   async rewrites() {
     return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:3001/api/:path*",
-      },
+      // No hacer rewrite de rutas de API externas
+      // Las rutas /api/* se manejan internamente por Next.js
     ];
+  },
+  // Configuración para resolver problemas con OpenTelemetry y Sentry
+  webpack: (config, { isServer }) => {
+    // Ignorar warnings de dependencias críticas de OpenTelemetry
+    config.ignoreWarnings = [
+      /Critical dependency: the request of a dependency is an expression/,
+      /Module not found: Can't resolve 'perf_hooks'/,
+    ];
+
+    // Configuración para manejar módulos de OpenTelemetry
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve.fallback,
+        perf_hooks: false,
+      },
+    };
+
+    // Configuración específica para Sentry y OpenTelemetry
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@opentelemetry/instrumentation': false,
+        '@opentelemetry/api': false,
+      };
+    }
+
+    return config;
+  },
+  // Configuración experimental para mejorar el rendimiento
+  experimental: {
+    // instrumentationHook ya no es necesario en Next.js 15+
   },
 };
 
-export default withSentryConfig(nextConfig, {
-// For all available options, see:
-// https://www.npmjs.com/package/@sentry/webpack-plugin#options
-
-org: "instituto-tecnologico-del-putu",
-project: "javascript-nextjs-af",
-
-// Only print logs for uploading source maps in CI
-silent: !process.env.CI,
-
-// For all available options, see:
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-// Upload a larger set of source maps for prettier stack traces (increases build time)
-widenClientFileUpload: true,
-
-// Uncomment to route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-// This can increase your server load as well as your hosting bill.
-// Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-// side errors will fail.
-// tunnelRoute: "/monitoring",
-
-// Automatically tree-shake Sentry logger statements to reduce bundle size
-disableLogger: true,
-
-// Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-// See the following for more information:
-// https://docs.sentry.io/product/crons/
-// https://vercel.com/docs/cron-jobs
-automaticVercelMonitors: true,
-});
+export default nextConfig;

@@ -1,22 +1,28 @@
 /* Contenedor principal */
 .login-container {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-image: url("/images/login.jpg"); /* Cambia la ruta a tu imagen */
+  background-image: url("/images/login.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 1rem;
+  z-index: 1000;
 }
+
 .login-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 0;
-  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
 }
 /* Elimino o comento el pseudo-elemento que causaba el error visual */
 /*
@@ -33,13 +39,14 @@
 .login-card {
     position: relative;
     z-index: 2;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: white;
     padding: 2.5rem 2rem;
     border-radius: 1rem;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     width: 100%;
     max-width: 400px;
     text-align: center;
+    margin: 1rem;
   }
 
 /* Título y subtítulo */
@@ -106,9 +113,9 @@
   text-decoration: underline;
 }
 .close-button {
-    position: fixed;
-    top: 1.5rem;
-    right: 2rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
     font-size: 1.5rem;
     text-decoration: none;
     color: #fff;
@@ -126,6 +133,15 @@
     color: #002d62;
     outline: 2px solid #002d62;
   }
+
+/* Asegurar que el modal se muestre correctamente */
+.login-container * {
+  box-sizing: border-box;
+}
+
+.login-container {
+  overflow: hidden;
+}
 
 @media (max-width: 600px) {
   .login-card {

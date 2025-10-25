@@ -2,85 +2,103 @@
 import "../styles/Reservations.css";
 import Link from "next/link";
 import { useEffect, useState } from 'react';
-import { reservationService } from '../services';
+import { roomCategoryService } from '../services';
 import { useRouter } from 'next/navigation';
-import ReservationList from '../components/ReservationList';
+
 
 export default function ReservasPage() {
-  const [reservas, setReservas] = useState([]);
-  const [search, setSearch] = useState('');
-  const [searchDate, setSearchDate] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const habitaciones = [
-    {
-      id: 1,
-      nombre: "Habitación Estándar",
-      descripcion: "Amplia habitación con vista al jardín, cama king size y amenities de lujo.",
-      precio: 120,
-      imagen: "/images/habitacion-estandar.jpg"
-    },
-    {
-      id: 2,
-      nombre: "Suite Ejecutiva",
-      descripcion: "Espaciosa suite con sala de estar separada y vista al mar.",
-      precio: 220,
-      imagen: "/images/suite-ejecutiva.jpg"
-    },
-    {
-      id: 3,
-      nombre: "Suite Presidencial",
-      descripcion: "Lujo máximo con terraza privada, jacuzzi y servicio de mayordomo.",
-      precio: 350,
-      imagen: "/images/suite-presidencial.jpg"
+
+  // Función helper para normalizar datos de categorías
+  const normalizeCategories = (data: any): any[] => {
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data && data.data && Array.isArray(data.data)) {
+      return data.data;
+    } else if (data && Array.isArray(data.categories)) {
+      return data.categories;
+    } else {
+      console.warn('⚠️ Formato de categorías no esperado:', data);
+      return [];
     }
-  ];
-
-  useEffect(() => {
-    setLoading(true);
-    reservationService.getUserReservations()
-      .then(setReservas)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleDelete = async (id) => {
-    setLoading(true);
-    await reservationService.cancelReservation(id);
-    setReservas(reservas.filter(r => r.id !== id));
-    setLoading(false);
   };
 
-  const filtered = reservas.filter(r => {
-    const matchNombre = r.room?.name?.toLowerCase().includes(search.toLowerCase());
-    const matchFecha = searchDate ? r.checkInDate?.slice(0,10) === searchDate : true;
-    return matchNombre && matchFecha;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Cargar solo categorías
+        const categoriesData = await roomCategoryService.getAllCategories();
+        
+        console.log('🏷️ Datos de categorías obtenidos:', categoriesData);
+        
+        const normalizedCategories = normalizeCategories(categoriesData);
+        
+        console.log('🏷️ Categorías normalizadas:', normalizedCategories);
+        
+        setCategories(normalizedCategories);
+      } catch (error) {
+        console.error('❌ Error al cargar categorías:', error);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+
 
   return (
     <main className="main-reservas">
-      <section style={{marginBottom:'2.5rem'}}>
-        <h2 style={{marginBottom:'1rem'}}>Mis Reservas</h2>
-        <ReservationList reservas={reservas} loading={loading} onDelete={handleDelete} />
-      </section>
       <section className="reservas-grid">
-        {habitaciones.map((habitacion) => (
-          <div key={habitacion.id} className="reserva-card">
-            <img 
-              src={habitacion.imagen} 
-              alt={habitacion.nombre} 
-              className="reserva-img"
-            />
-            <div className="reserva-content">
-              <h2>{habitacion.nombre}</h2>
-              <p className="reserva-desc">{habitacion.descripcion}</p>
-              <p className="reserva-precio">Desde ${habitacion.precio}/noche</p>
-              <button onClick={() => router.push(`/reservations/formulario?tipo=${habitacion.id}`)} className="btn-reserva">
-                Reservar Ahora
-              </button>
-            </div>
+        <h2 style={{marginBottom:'1rem', gridColumn:'1/-1'}}>Categorías de Habitaciones</h2>
+        {loading ? (
+          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'2rem'}}>
+            Cargando categorías...
           </div>
-        ))}
+        ) : categories.length > 0 ? (
+          categories.map((category) => (
+            <div key={category._id} className="reserva-card">
+              <div className="category-icon" style={{fontSize:'3rem', textAlign:'center', marginBottom:'1rem'}}>
+                {category.icon}
+              </div>
+              <div className="reserva-content">
+                <h2>{category.name}</h2>
+                <p className="reserva-desc">{category.description}</p>
+                <div style={{marginBottom:'1rem'}}>
+                  <p><strong>Capacidad:</strong> {category.maxCapacity} persona{category.maxCapacity > 1 ? 's' : ''}</p>
+                  <p><strong>Precio base:</strong> ${category.basePrice}/noche</p>
+                  <p><strong>Camas:</strong> {category.bedTypes.join(', ')}</p>
+                </div>
+                <div style={{marginBottom:'1rem'}}>
+                  <p><strong>Incluye:</strong></p>
+                  <ul style={{fontSize:'0.9rem', marginLeft:'1rem'}}>
+                    {category.standardAmenities.slice(0, 3).map((amenity: any, index: number) => (
+                      <li key={index}>{amenity}</li>
+                    ))}
+                    {category.standardAmenities.length > 3 && (
+                      <li>+{category.standardAmenities.length - 3} más</li>
+                    )}
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => router.push(`/reservations/formulario?tipo=${category._id}`)} 
+                  className="btn-reserva"
+                >
+                  Ver Habitaciones Disponibles
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'2rem', color:'#666'}}>
+            No hay categorías disponibles
+          </div>
+        )}
       </section>
 
       <section className="reserva-beneficios">

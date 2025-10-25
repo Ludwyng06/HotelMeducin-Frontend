@@ -1,4 +1,5 @@
 import "../styles/pages.css";
+import Image from "next/image";
 
 export default function AboutPage() {
   return (
@@ -29,10 +30,14 @@ export default function AboutPage() {
       </p>
 
       {/* Imagen del hotel */}
-      <img
+      <Image
         src="/images/login.jpg"
         alt="Hotel Lobby o Fachada"
+        width={800}
+        height={500}
         style={{ width: "100%", borderRadius: "10px", marginTop: "1rem", boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkbHB0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
       />
     </section>
   );

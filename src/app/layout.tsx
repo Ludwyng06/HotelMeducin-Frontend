@@ -13,6 +13,11 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
+      <head>
+        <link rel="preload" href="/images/foto piscina.avif" as="image" type="image/avif" />
+        <link rel="dns-prefetch" href="//localhost:8080" />
+        <link rel="preconnect" href="//localhost:8080" crossOrigin="anonymous" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ReactQueryProvider>
           <AuthProvider>

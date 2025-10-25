@@ -1,6 +1,7 @@
 "use client";
 import "../styles/Main.css";
 import Link from "next/link";
+import Image from "next/image";
 
 const Main = () => {
   return (
@@ -10,10 +11,15 @@ const Main = () => {
         <p>Una experiencia de lujo, comodidad y hospitalidad en cada rincón.</p>
 
         {/* Imagen de la piscina */}
-        <img
+        <Image
           src="/images/foto piscina.avif"
           alt="Piscina del hotel"
           className="hero-img"
+          width={800}
+          height={600}
+          priority
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkbHB0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
         />
 
         {/* Texto promocional */}

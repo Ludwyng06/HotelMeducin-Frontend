@@ -1,7 +1,7 @@
 'use client';
 import Link from "next/link";
 import "../styles/Login.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +17,13 @@ export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const router = useRouter();
 
+  // Limpiar estado al montar el componente
+  useEffect(() => {
+    setEmail("");
+    setPassword("");
+    setError("");
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -26,9 +33,12 @@ export default function LoginPage() {
       // Redirección inteligente según parámetro 'redirect'
       const params = new URLSearchParams(window.location.search);
       const redirect = params.get("redirect");
-      if (redirect) {
+      
+      // Si hay un redirect específico y no es el perfil, redirigir ahí
+      if (redirect && !redirect.includes('user/profile')) {
         router.push("/" + redirect.replace(/^\//, ""));
       } else {
+        // Por defecto, siempre ir al home después del login
         router.push("/");
       }
     } catch (err: any) {

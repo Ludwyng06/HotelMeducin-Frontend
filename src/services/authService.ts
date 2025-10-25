@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export interface LoginCredentials {
   email: string;
@@ -30,8 +30,12 @@ const authService = {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
       if (response.data.token) {
+        // Guardar en localStorage para acceso del cliente
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Guardar también en cookies para el middleware
+        document.cookie = `token=${response.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       }
       return response.data;
     } catch (error: any) {
@@ -57,11 +61,31 @@ const authService = {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // Limpiar también la cookie
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
   },
 
   getCurrentUser(): any {
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (user) {
+      return JSON.parse(user);
+    }
+    
+    // Para pruebas: si no hay usuario pero hay token, crear un usuario de prueba
+    const token = this.getToken();
+    if (token) {
+      const testUser = {
+        id: 1,
+        firstName: 'Usuario',
+        lastName: 'Prueba',
+        email: 'test@example.com',
+        role: 'user'
+      };
+      localStorage.setItem('user', JSON.stringify(testUser));
+      return testUser;
+    }
+    
+    return null;
   },
 
   getToken(): string | null {
@@ -70,6 +94,23 @@ const authService = {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  },
+
+  // Método temporal para pruebas
+  createTestUser(): void {
+    const testToken = 'test-token-123';
+    const testUser = {
+      id: 1,
+      firstName: 'Usuario',
+      lastName: 'De Prueba',
+      email: 'test@example.com',
+      role: 'user',
+      phoneNumber: '+1234567890'
+    };
+    
+    localStorage.setItem('token', testToken);
+    localStorage.setItem('user', JSON.stringify(testUser));
+    document.cookie = `token=${testToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
   }
 };
 

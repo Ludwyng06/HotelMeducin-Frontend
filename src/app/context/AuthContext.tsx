@@ -1,11 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import authService from '../../services/authService';
+import { authService } from '../services/authService';
 
 // Definir el tipo para el usuario
 interface User {
-  id: number;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -34,17 +34,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Obtener usuario actual al cargar la app
   useEffect(() => {
-    refreshUser();
+    initializeAuth();
     // eslint-disable-next-line
   }, []);
 
-  const refreshUser = async () => {
+  const initializeAuth = async () => {
     setIsLoading(true);
     try {
-      const currentUser = await authService.getCurrentUser();
-      setUser(currentUser);
+      // Primero intentar obtener usuario desde sessionStorage
+      const cachedUser = sessionStorage.getItem('auth_user');
+      const token = localStorage.getItem('token');
+      
+      if (cachedUser && token) {
+        setUser(JSON.parse(cachedUser));
+        setIsLoading(false);
+        
+        // Verificar token en background sin bloquear UI
+        setTimeout(() => {
+          refreshUser();
+        }, 100);
+      } else {
+        await refreshUser();
+      }
     } catch {
       setUser(null);
+      setIsLoading(false);
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      // Primero verificar si hay token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setUser(null);
+        sessionStorage.removeItem('auth_user');
+        setIsLoading(false);
+        return;
+      }
+
+      // Si hay token, obtener usuario del backend
+      const userData = await authService.getProfile();
+      if (userData && userData.data) {
+        setUser(userData.data);
+        // Cachear usuario en sessionStorage
+        sessionStorage.setItem('auth_user', JSON.stringify(userData.data));
+      } else {
+        setUser(null);
+        sessionStorage.removeItem('auth_user');
+      }
+    } catch {
+      setUser(null);
+      sessionStorage.removeItem('auth_user');
     } finally {
       setIsLoading(false);
     }
@@ -53,8 +94,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await authService.login({ email, password });
-      await refreshUser();
+      const response = await authService.login({ email, password });
+      if (response.success && response.data) {
+        // Guardar datos de autenticación
+        authService.saveAuthData(response.data.user, (response.data as any).access_token || response.data.token);
+        setUser(response.data.user);
+        sessionStorage.setItem('auth_user', JSON.stringify(response.data.user));
+      }
+    } catch (error) {
+      console.error('Error en login:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: any) => {
     setIsLoading(true);
     try {
-      await authService.register(userData);
-      // No refrescar usuario porque no hay token tras registro
+      const response = await authService.register(userData);
+      if (response.success && response.data) {
+        // Guardar datos de autenticación
+        authService.saveAuthData(response.data.user, (response.data as any).access_token || response.data.token);
+        setUser(response.data.user);
+        sessionStorage.setItem('auth_user', JSON.stringify(response.data.user));
+      }
     } catch (error: any) {
       throw error; // Propaga el error para que el componente lo maneje
     } finally {
@@ -75,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     authService.logout();
     setUser(null);
+    sessionStorage.removeItem('auth_user');
   };
 
   const value = {

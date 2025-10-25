@@ -1,43 +1,123 @@
 import API from './api';
 
+// Datos mock para reservas
+const mockReservations = [
+  {
+    id: 1,
+    room: { name: 'Suite Presidencial' },
+    checkInDate: '2024-01-15',
+    checkOutDate: '2024-01-18',
+    status: 'confirmed',
+    totalPrice: 450.00
+  },
+  {
+    id: 2,
+    room: { name: 'Habitación Estándar' },
+    checkInDate: '2024-02-10',
+    checkOutDate: '2024-02-12',
+    status: 'pending',
+    totalPrice: 180.00
+  },
+  {
+    id: 3,
+    room: { name: 'Suite Ejecutiva' },
+    checkInDate: '2024-03-05',
+    checkOutDate: '2024-03-08',
+    status: 'confirmed',
+    totalPrice: 320.00
+  }
+];
+
 export const reservationService = {
-  createReservation: async (reservationData: any) => {
-    const allowedFields = [
-      'roomId', 'checkInDate', 'checkOutDate', 'totalPrice', 'status', 'specialRequests', 'serviceIds', 'userId'
-    ];
-    const filteredData: any = {};
-    for (const key of allowedFields) {
-      if (reservationData[key] !== undefined) filteredData[key] = reservationData[key];
-    }
-    const response = await API.post('/reservations', filteredData);
+  // Crear nueva reservación
+  createReservation: async (reservationData: {
+    userId: string;
+    roomId: string;
+    checkInDate: string;
+    checkOutDate: string;
+    totalPrice: number;
+    status?: string;
+    specialRequests?: string;
+    serviceIds?: string[];
+  }) => {
+    const response = await API.post('/reservations', reservationData);
     return response.data;
   },
 
-  getReservationById: async (id: number) => {
+  // Obtener reservación por ID
+  getReservationById: async (id: string | number) => {
     const response = await API.get(`/reservations/${id}`);
     return response.data;
   },
 
-  getUserReservations: async () => {
-    const response = await API.get('/reservations/user');
+  // Obtener todas las reservaciones
+  getAllReservations: async () => {
+    const response = await API.get('/reservations');
     return response.data;
   },
 
-  cancelReservation: async (id: number) => {
-    const response = await API.delete(`/reservations/${id}`);
-    return response.data;
-  },
-
-  updateReservation: async (id: number, updateData: any) => {
-    // Solo enviar los campos requeridos por el backend
-    const allowedFields = [
-      'checkInDate', 'checkOutDate', 'totalPrice', 'status', 'specialRequests', 'roomId', 'serviceIds'
-    ];
-    const filteredData: any = {};
-    for (const key of allowedFields) {
-      if (updateData[key] !== undefined) filteredData[key] = updateData[key];
+  // Obtener reservaciones de un usuario específico
+  getUserReservations: async (userId?: string) => {
+    try {
+      console.log('🚀 INICIANDO getUserReservations - VERSIÓN ACTUALIZADA');
+      console.log('🔍 Obteniendo reservas del backend...');
+      // Obtener el userId del usuario autenticado
+      const cachedUser = sessionStorage.getItem('auth_user');
+      console.log('🔍 cachedUser desde sessionStorage:', cachedUser);
+      let finalUserId = userId;
+      
+      if (!finalUserId && cachedUser) {
+        try {
+          const user = JSON.parse(cachedUser);
+          console.log('🔍 Usuario parseado:', user);
+          finalUserId = user._id || user.id;
+          console.log('👤 userId obtenido:', finalUserId);
+          console.log('👤 tipo de userId:', typeof finalUserId);
+        } catch (error) {
+          console.error('Error al parsear usuario desde sessionStorage:', error);
+        }
+      } else if (!finalUserId) {
+        console.warn('⚠️ No se encontró auth_user en sessionStorage');
+      }
+      
+      if (!finalUserId) {
+        throw new Error('No se pudo obtener el ID del usuario');
+      }
+      
+      console.log('🌐 Enviando request a:', `/reservations/user?userId=${finalUserId}`);
+      const response = await API.get(`/reservations/user?userId=${finalUserId}`);
+      console.log('✅ Reservas del backend obtenidas:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error al obtener reservas del backend:', error.response?.data || error.message);
+      throw error;
     }
-    const response = await API.put(`/reservations/${id}`, filteredData);
+  },
+
+  // Obtener reservaciones por rango de fechas
+  getReservationsByDateRange: async (startDate: string, endDate: string) => {
+    const response = await API.get('/reservations/date-range', {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  },
+
+  // Actualizar reservación
+  updateReservation: async (id: string | number, updateData: {
+    checkInDate?: string;
+    checkOutDate?: string;
+    totalPrice?: number;
+    status?: string;
+    specialRequests?: string;
+    serviceIds?: string[];
+  }) => {
+    const response = await API.patch(`/reservations/${id}`, updateData);
+    return response.data;
+  },
+
+  // Cancelar reservación
+  cancelReservation: async (id: string | number) => {
+    const response = await API.delete(`/reservations/${id}`);
     return response.data;
   },
 }; 
