@@ -2,10 +2,6 @@
 import "../styles/Footer.css";
 
 const Footer = () => {
-  // Prueba de Sentry en Footer
-  if (typeof window !== "undefined" && window.location.search.includes("sentryTest=footer")) {
-    throw new Error("Prueba de error Sentry en Footer");
-  }
 
   return (
     <footer className="footer">

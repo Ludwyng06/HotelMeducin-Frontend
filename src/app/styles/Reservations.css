@@ -2,7 +2,7 @@
 .main-reservas {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem 2rem;
   font-family: var(--font-main);
 }
 
@@ -26,9 +26,25 @@
 /* Tarjetas de habitaciones */
 .reservas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-  margin-bottom: 4rem;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .reservas-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .reservas-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
 }
 
 .reserva-card {
@@ -50,43 +66,57 @@
   object-fit: cover;
 }
 
+.category-image {
+  width: 100%;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
 .reserva-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .reserva-content h2 {
   color: var(--color-primary-dark);
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
   font-family: var(--font-main);
 }
 
 .reserva-desc {
   color: var(--color-text-light);
-  margin-bottom: 1rem;
-  line-height: 1.5;
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 .reserva-precio {
   font-weight: bold;
   color: var(--color-primary-dark);
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
 }
 
-.btn-reserva {
+.reserva-card .btn-reserva {
   display: inline-block;
   background-color: var(--color-primary-light);
   color: var(--color-surface);
-  padding: 0.7rem 1.5rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 4px;
   text-decoration: none;
   font-weight: 500;
   transition: background-color 0.3s ease;
   font-family: var(--font-main);
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: center;
 }
 
-.btn-reserva:hover {
+.reserva-card .btn-reserva:hover {
   background-color: var(--color-primary-dark);
 }
 

@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Navbar.css";
 import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
 
 const menuItems = [
   {
@@ -24,11 +25,12 @@ const menuItems = [
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const { user } = useAuth();
 
-  // Prueba de Sentry en Navbar
-  if (typeof window !== "undefined" && window.location.search.includes("sentryTest=navbar")) {
-    throw new Error("Prueba de error Sentry en Navbar");
-  }
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="navbar">
@@ -52,7 +54,18 @@ const Navbar = () => {
                 <div className="dropdown-menu">
                   {item.submenu.map((subitem) => (
                     <Link
-                      href={`/${item.title.toLowerCase().replace(/\s/g, "-")}/${subitem.toLowerCase().replace(/\s/g, "-").replace(/&/g, "y").replace(/á/g, "a").replace(/é/g, "e").replace(/í/g, "i").replace(/ó/g, "o").replace(/ú/g, "u").replace(/ñ/g, "n")}`}
+                      href={`/${item.title
+                        .toLowerCase()
+                        .replace(/\s/g, "-")}/${subitem
+                        .toLowerCase()
+                        .replace(/\s/g, "-")
+                        .replace(/&/g, "y")
+                        .replace(/á/g, "a")
+                        .replace(/é/g, "e")
+                        .replace(/í/g, "i")
+                        .replace(/ó/g, "o")
+                        .replace(/ú/g, "u")
+                        .replace(/ñ/g, "n")}`}
                       className="dropdown-item"
                       key={subitem}
                     >
@@ -63,6 +76,24 @@ const Navbar = () => {
               )}
             </div>
           ))}
+
+          {/* Enlace para Superadministrador */}
+          {isClient && user?.role === "superadmin" && (
+            <div
+              className="nav-link-wrapper"
+              onMouseEnter={() => setActiveMenu("superadmin")}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <Link
+                href="/superadmin/dashboard"
+                className={`nav-link ${
+                  activeMenu === "superadmin" ? "active" : ""
+                }`}
+              >
+                Gestionar Administradores
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

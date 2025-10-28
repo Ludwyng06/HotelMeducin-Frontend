@@ -16,10 +16,6 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const router = useRouter();
 
-  // Prueba de Sentry en Lista de Reservas
-  if (typeof window !== "undefined" && window.location.search.includes("sentryTest=reservas")) {
-    throw new Error("Prueba de error Sentry en Lista de Reservas");
-  }
 
   const filtered = reservas.filter(r => {
     // Manejar diferentes estructuras de datos del backend

@@ -44,8 +44,13 @@ export const authService = {
       console.log('✅ Respuesta del backend:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('❌ Error en registro:', error.response?.data || error.message);
-      throw error;
+      // Evitar imprimir objetos vacíos
+      const payload = error?.response?.data || { message: error?.message || 'Error desconocido' };
+      console.error('❌ Error en registro:', payload);
+      // Propagar un error con mensaje claro para mostrar en UI
+      const err = new Error(payload?.message || 'Error al registrar usuario');
+      (err as any).status = error?.response?.status;
+      throw err;
     }
   },
 

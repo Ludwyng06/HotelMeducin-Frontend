@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { reservationService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import AvailabilityCalendar from './AvailabilityCalendar';
@@ -12,6 +13,7 @@ interface Props {
 
 export default function ReservationSimpleForm({ roomId, rooms }: Props) {
   const { user } = useAuth();
+  const router = useRouter();
   const [form, setForm] = useState({
     checkInDate: '',
     checkOutDate: '',
@@ -93,63 +95,18 @@ export default function ReservationSimpleForm({ roomId, rooms }: Props) {
         throw new Error('La fecha de salida debe ser posterior a la fecha de entrada');
       }
 
-      // Debug del usuario
-      console.log('👤 Usuario completo:', user);
-      console.log('👤 user._id:', user._id);
-          console.log('👤 user.id:', (user as any).id);
-      
-      // Intentar obtener el ID del usuario de diferentes formas
-      let userId = user?._id || (user as any)?.id;
-      
-      // Si no encontramos el ID, intentar obtenerlo del sessionStorage
-      if (!userId) {
-        const cachedUser = sessionStorage.getItem('auth_user');
-        if (cachedUser) {
-          try {
-            const parsedUser = JSON.parse(cachedUser);
-            userId = parsedUser._id || parsedUser.id;
-            console.log('👤 ID desde sessionStorage:', userId);
-          } catch (error) {
-            console.error('Error al parsear usuario desde sessionStorage:', error);
-          }
-        }
-      }
-      
-      // Validar que el userId sea válido
-      if (!userId || userId === 'undefined' || userId === 'null') {
-        console.error('❌ userId inválido:', userId);
-        throw new Error('No se pudo obtener el ID del usuario. Por favor, inicia sesión nuevamente.');
-      }
-      
-      // Asegurar que userId sea string
-      userId = String(userId);
-      console.log('✅ userId final:', userId);
-
-      const data = {
-        roomId: String(selectedRoom._id),
-        checkInDate: form.checkInDate,
-        checkOutDate: form.checkOutDate,
-        totalPrice: Number(totalPrice),
-        userId: String(userId),
-        status: 'pending',
-        specialRequests: form.specialRequests || '',
-        serviceIds: []
-      };
-
-      console.log('📝 Creando reserva:', data);
-      const res = await reservationService.createReservation(data);
-      setSuccess('¡Reserva creada exitosamente!');
-      
-      // Limpiar formulario
-      setForm({
-        checkInDate: '',
-        checkOutDate: '',
-        specialRequests: '',
-        guestCount: 1
+      // Redirigir a la página de continuación con los parámetros
+      const params = new URLSearchParams({
+        roomId: selectedRoom._id,
+        checkIn: form.checkInDate,
+        checkOut: form.checkOutDate
       });
-    } catch (err: any) {
-      console.error('❌ Error al crear reserva:', err);
-      setError(err?.response?.data?.message || err.message || 'Error al crear la reserva');
+      
+      router.push(`/reservations/continue?${params.toString()}`);
+      
+    } catch (error: any) {
+      console.error('Error en validación:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -214,16 +171,17 @@ export default function ReservationSimpleForm({ roomId, rooms }: Props) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ padding: '2rem' }}>
-        <h3 style={{
-          fontSize: '1.5rem',
-          fontWeight: '600',
-          marginBottom: '1.5rem',
-          color: '#2d3748',
-          textAlign: 'center'
-        }}>
-          📅 Completa tu Reserva
-        </h3>
+      {!success && (
+        <form onSubmit={handleSubmit} style={{ padding: '2rem' }}>
+          <h3 style={{
+            fontSize: '1.5rem',
+            fontWeight: '600',
+            marginBottom: '1.5rem',
+            color: '#2d3748',
+            textAlign: 'center'
+          }}>
+            📅 Completa tu Reserva
+          </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
@@ -344,25 +302,27 @@ export default function ReservationSimpleForm({ roomId, rooms }: Props) {
             boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
           }}
         >
-          {loading ? '⏳ Procesando...' : '✅ Confirmar Reserva'}
+          {loading ? '⏳ Procesando...' : '🚀 Continuar con la Reserva'}
         </button>
 
-        {error && (
-          <div style={{
-            marginTop: '1rem',
-            padding: '1rem',
-            background: '#fed7d7',
-            color: '#c53030',
-            borderRadius: '8px',
-            border: '1px solid #feb2b2',
-            textAlign: 'center',
-            fontWeight: '500'
-          }}>
-            ❌ {error}
-          </div>
-        )}
+          {error && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '1rem',
+              background: '#fed7d7',
+              color: '#c53030',
+              borderRadius: '8px',
+              border: '1px solid #feb2b2',
+              textAlign: 'center',
+              fontWeight: '500'
+            }}>
+              ❌ {error}
+            </div>
+          )}
+        </form>
+      )}
 
-            {success && (
+      {success && (
               <div style={{
                 marginTop: '1rem',
                 padding: '1.5rem',
@@ -416,64 +376,63 @@ export default function ReservationSimpleForm({ roomId, rooms }: Props) {
                 </div>
               </div>
             )}
-          </form>
 
-          {/* Calendario de disponibilidad */}
-          {showCalendar && selectedRoom && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000
+      {/* Calendario de disponibilidad */}
+      {showCalendar && selectedRoom && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '1rem',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setShowCalendar(false)}
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.5rem',
+                background: '#e53e3e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '2rem',
+                height: '2rem',
+                cursor: 'pointer',
+                fontSize: '1.2rem'
+              }}
+            >
+              ×
+            </button>
+            <h3 style={{
+              marginBottom: '1rem',
+              textAlign: 'center',
+              color: '#2d3748'
             }}>
-              <div style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '1rem',
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                overflow: 'auto',
-                position: 'relative'
-              }}>
-                <button
-                  onClick={() => setShowCalendar(false)}
-                  style={{
-                    position: 'absolute',
-                    top: '0.5rem',
-                    right: '0.5rem',
-                    background: '#e53e3e',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '2rem',
-                    height: '2rem',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem'
-                  }}
-                >
-                  ×
-                </button>
-                <h3 style={{
-                  marginBottom: '1rem',
-                  textAlign: 'center',
-                  color: '#2d3748'
-                }}>
-                  {calendarType === 'checkin' ? 'Seleccionar Fecha de Entrada' : 'Seleccionar Fecha de Salida'}
-                </h3>
-                <AvailabilityCalendar
-                  roomId={selectedRoom._id}
-                  onDateSelect={handleCalendarDateSelect}
-                  selectedDate={calendarType === 'checkin' ? form.checkInDate : form.checkOutDate}
-                />
-              </div>
-            </div>
-          )}
+              {calendarType === 'checkin' ? 'Seleccionar Fecha de Entrada' : 'Seleccionar Fecha de Salida'}
+            </h3>
+            <AvailabilityCalendar
+              roomId={selectedRoom._id}
+              onDateSelect={handleCalendarDateSelect}
+              selectedDate={calendarType === 'checkin' ? form.checkInDate : form.checkOutDate}
+            />
+          </div>
         </div>
-      );
-    }
+      )}
+    </div>
+  );
+}

@@ -164,6 +164,17 @@ export const roomService = {
       console.error('Error al establecer mantenimiento:', error);
       throw error;
     }
+  },
+
+  // Obtener fechas ocupadas de una habitación
+  getOccupiedDates: async (roomId: string): Promise<string[]> => {
+    try {
+      const response = await API.get(`/reservations/room/${roomId}/occupied-dates`);
+      return response.data.data || response.data || [];
+    } catch (error) {
+      console.error('Error al obtener fechas ocupadas:', error);
+      return [];
+    }
   }
 };
 

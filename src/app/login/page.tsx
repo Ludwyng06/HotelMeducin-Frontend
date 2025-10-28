@@ -6,10 +6,6 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  // Prueba de Sentry en Login
-  if (typeof window !== "undefined" && window.location.search.includes("sentryTest=login")) {
-    throw new Error("Prueba de error Sentry en Login");
-  }
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

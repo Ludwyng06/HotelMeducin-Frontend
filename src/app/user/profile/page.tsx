@@ -120,37 +120,45 @@ const UserProfilePage = () => {
     };
   }, []);
 
-  // Forzar re-render para asegurar que los estilos se apliquen
-  useEffect(() => {
-    // Pequeño delay para asegurar que el DOM esté listo
-    const timer = setTimeout(() => {
-      // Forzar un re-render sutil
-      setLoading(prev => prev);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  // Eliminado useEffect que causaba bucles de re-render
 
-  // Efecto para refrescar las reservas cuando se crea una nueva
+  // Efecto para refrescar las reservas cuando se crea una nueva (optimizado)
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
+    
     const handleStorageChange = async () => {
-      try {
-        const res = await reservationService.getUserReservations();
-        const reservationsArray = normalizeReservations(res);
-        setReservations(reservationsArray);
-      } catch (err) {
-        console.error('Error al actualizar reservas:', err);
+      if (!isMounted) return;
+      
+      // Debounce para evitar llamadas múltiples
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        try {
+          const res = await reservationService.getUserReservations();
+          const reservationsArray = normalizeReservations(res);
+          if (isMounted) {
+            setReservations(reservationsArray);
+          }
+        } catch (err) {
+          console.error('Error al actualizar reservas:', err);
+        }
+      }, 500);
+    };
+
+    // Solo escuchar cambios específicos
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'reservation_created' && e.newValue) {
+        handleStorageChange();
       }
     };
 
-    // Escuchar cambios en localStorage
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar un evento personalizado para cambios en la misma pestaña
+    window.addEventListener('storage', handleStorage);
     window.addEventListener('reservationsUpdated', handleStorageChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      isMounted = false;
+      clearTimeout(timeoutId);
+      window.removeEventListener('storage', handleStorage);
       window.removeEventListener('reservationsUpdated', handleStorageChange);
     };
   }, []);

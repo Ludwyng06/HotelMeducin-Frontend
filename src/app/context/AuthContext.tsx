@@ -10,6 +10,7 @@ interface User {
   lastName: string;
   email: string;
   role: string;
+  roleId?: string;
   phoneNumber?: string;
 }
 
@@ -49,10 +50,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(JSON.parse(cachedUser));
         setIsLoading(false);
         
-        // Verificar token en background sin bloquear UI
-        setTimeout(() => {
-          refreshUser();
-        }, 100);
+        // Verificar token en background sin bloquear UI (optimizado)
+        // Usar requestIdleCallback si está disponible, sino setTimeout
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(() => {
+            refreshUser();
+          });
+        } else {
+          setTimeout(() => {
+            refreshUser();
+          }, 1000); // Aumentar delay para evitar bucles
+        }
       } else {
         await refreshUser();
       }

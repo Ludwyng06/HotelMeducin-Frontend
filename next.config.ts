@@ -13,34 +13,6 @@ const nextConfig: NextConfig = {
       // Las rutas /api/* se manejan internamente por Next.js
     ];
   },
-  // Configuración para resolver problemas con OpenTelemetry y Sentry
-  webpack: (config, { isServer }) => {
-    // Ignorar warnings de dependencias críticas de OpenTelemetry
-    config.ignoreWarnings = [
-      /Critical dependency: the request of a dependency is an expression/,
-      /Module not found: Can't resolve 'perf_hooks'/,
-    ];
-
-    // Configuración para manejar módulos de OpenTelemetry
-    config.resolve = {
-      ...config.resolve,
-      fallback: {
-        ...config.resolve.fallback,
-        perf_hooks: false,
-      },
-    };
-
-    // Configuración específica para Sentry y OpenTelemetry
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@opentelemetry/instrumentation': false,
-        '@opentelemetry/api': false,
-      };
-    }
-
-    return config;
-  },
   // Configuración experimental para mejorar el rendimiento
   experimental: {
     // instrumentationHook ya no es necesario en Next.js 15+

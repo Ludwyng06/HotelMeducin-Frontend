@@ -52,36 +52,69 @@ export default function ReservasPage() {
   }, []);
 
 
+  // Mapeo de categorías a imágenes
+  const getCategoryImage = (categoryName: string) => {
+    const imageMap: { [key: string]: string } = {
+      'Individual': '/images/habitacion-individual.jpg',
+      'Doble': '/images/habitacion-doble.jpg', 
+      'Twin': '/images/habitacion-twin.jpg',
+      'Triple': '/images/habitacion-triple.jpg',
+      'Suite': '/images/suite-ejecutiva.jpg',
+      'Presidencial': '/images/suite-presidencial.jpg'
+    };
+    return imageMap[categoryName] || '/images/habitacion-estandar.jpg';
+  };
+
   return (
     <main className="main-reservas">
+      <h2 style={{marginBottom:'1rem', marginTop:'0', color:'#1a365d', fontSize:'2rem', fontWeight:'600', textAlign:'center'}}>Categorías de Habitaciones</h2>
       <section className="reservas-grid">
-        <h2 style={{marginBottom:'1rem', gridColumn:'1/-1'}}>Categorías de Habitaciones</h2>
         {loading ? (
-          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'2rem'}}>
+          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'1rem'}}>
             Cargando categorías...
           </div>
         ) : categories.length > 0 ? (
           categories.map((category) => (
             <div key={category._id} className="reserva-card">
-              <div className="category-icon" style={{fontSize:'3rem', textAlign:'center', marginBottom:'1rem'}}>
-                {category.icon}
+              <div className="category-image" style={{
+                width: '100%',
+                height: '250px',
+                backgroundImage: `url(${getCategoryImage(category.name)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                borderRadius: '8px',
+                marginBottom: '0.8rem',
+                position: 'relative'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  padding: '0.5rem',
+                  borderRadius: '20px',
+                  fontSize: '1.5rem'
+                }}>
+                  {category.icon}
+                </div>
               </div>
               <div className="reserva-content">
                 <h2>{category.name}</h2>
                 <p className="reserva-desc">{category.description}</p>
-                <div style={{marginBottom:'1rem'}}>
-                  <p><strong>Capacidad:</strong> {category.maxCapacity} persona{category.maxCapacity > 1 ? 's' : ''}</p>
-                  <p><strong>Precio base:</strong> ${category.basePrice}/noche</p>
-                  <p><strong>Camas:</strong> {category.bedTypes.join(', ')}</p>
+                <div style={{marginBottom:'0.8rem'}}>
+                  <p style={{margin:'0.3rem 0', fontSize:'0.85rem'}}><strong>Capacidad:</strong> {category.maxCapacity} persona{category.maxCapacity > 1 ? 's' : ''}</p>
+                  <p style={{margin:'0.3rem 0', fontSize:'0.85rem'}}><strong>Precio base:</strong> ${category.basePrice}/noche</p>
+                  <p style={{margin:'0.3rem 0', fontSize:'0.85rem'}}><strong>Camas:</strong> {category.bedTypes.join(', ')}</p>
                 </div>
-                <div style={{marginBottom:'1rem'}}>
-                  <p><strong>Incluye:</strong></p>
-                  <ul style={{fontSize:'0.9rem', marginLeft:'1rem'}}>
+                <div style={{marginBottom:'0.8rem'}}>
+                  <p style={{margin:'0.3rem 0', fontSize:'0.85rem'}}><strong>Incluye:</strong></p>
+                  <ul style={{fontSize:'0.8rem', marginLeft:'1rem', marginTop:'0.3rem'}}>
                     {category.standardAmenities.slice(0, 3).map((amenity: any, index: number) => (
-                      <li key={index}>{amenity}</li>
+                      <li key={index} style={{margin:'0.2rem 0'}}>{amenity}</li>
                     ))}
                     {category.standardAmenities.length > 3 && (
-                      <li>+{category.standardAmenities.length - 3} más</li>
+                      <li style={{margin:'0.2rem 0'}}>+{category.standardAmenities.length - 3} más</li>
                     )}
                   </ul>
                 </div>
@@ -95,7 +128,7 @@ export default function ReservasPage() {
             </div>
           ))
         ) : (
-          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'2rem', color:'#666'}}>
+          <div style={{textAlign:'center', gridColumn:'1/-1', padding:'1rem', color:'#666'}}>
             No hay categorías disponibles
           </div>
         )}

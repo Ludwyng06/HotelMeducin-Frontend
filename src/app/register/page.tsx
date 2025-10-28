@@ -6,10 +6,6 @@ import { useRouter } from "next/navigation";
 import "../styles/Register.css";
 
 export default function RegisterPage() {
-  // Prueba de Sentry en Register
-  if (typeof window !== "undefined" && window.location.search.includes("sentryTest=register")) {
-    throw new Error("Prueba de error Sentry en Register");
-  }
 
   const [formData, setFormData] = useState({
     email: "",

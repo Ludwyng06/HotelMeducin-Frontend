@@ -34,13 +34,27 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('❌ Error en respuesta:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      url: error.config?.url
-    });
-    
+    // Evitar logs vacíos o ruidosos
+    const isNetworkError = error?.code === 'ERR_NETWORK' || error?.code === 'ERR_INTERNET_DISCONNECTED';
+    const isTimeoutError = error?.code === 'ECONNABORTED';
+    const isCanceled = error?.code === 'ERR_CANCELED';
+    const status = error?.response?.status;
+    const url = error?.config?.url;
+
+    // Si es cancelado/timeout/red: no loggear como error ruidoso
+    if (isCanceled) {
+      // silencioso
+    } else if (isNetworkError || isTimeoutError) {
+      console.warn('⚠️ Error de conexión:', error?.message || 'Sin conexión');
+    } else if (status || error?.message) {
+      console.error('❌ Error en respuesta:', {
+        message: error?.message || 'Sin mensaje',
+        code: error?.code || 'Sin código',
+        status: status || 'Sin status',
+        url: url || 'Sin URL'
+      });
+    }
+
     if (error.response?.status === 401) {
       // Token expirado o inválido
       if (typeof window !== 'undefined') {
