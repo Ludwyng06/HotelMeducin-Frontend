@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
-import GuestForm from '../../components/GuestForm';
-import API from '../../services/api';
-import '../../styles/ReservationContinue.css';
+import { useAuth } from '@context/AuthContext';
+import GuestForm from '@components/GuestForm';
+import API from '@services/api';
+import '@styles/ReservationContinue.css';
+import type { DocumentType } from '@models/Document';
+import type { GuestData } from '@models/Reservation';
 
 interface Room {
   _id: string;
@@ -17,25 +19,6 @@ interface Room {
     _id: string;
     name: string;
   };
-}
-
-interface DocumentType {
-  _id: string;
-  name: string;
-  code: string;
-  validationPattern: string;
-}
-
-interface GuestData {
-  documentType: string;
-  documentNumber: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  nationality: string;
-  phoneNumber: string;
-  email: string;
-  isCompleted: boolean;
 }
 
 function ReservationContinueContent() {

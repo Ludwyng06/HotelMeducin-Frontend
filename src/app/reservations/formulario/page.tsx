@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ReservationSimpleForm from '../../components/ReservationSimpleForm';
-import { roomService, roomCategoryService } from '../../services';
+import ReservationSimpleForm from '@components/ReservationSimpleForm';
+import { roomService } from '@services/roomService';
+import { roomCategoryService } from '@services/roomCategoryService';
 
 function ReservationFormContent() {
   const searchParams = useSearchParams();

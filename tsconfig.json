@@ -20,7 +20,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@models/*": ["./src/models/*"],
+      "@services/*": ["./src/services/*"],
+      "@controllers/*": ["./src/controllers/*"],
+      "@views/*": ["./src/views/*", "./src/app/*"],
+      "@components/*": ["./src/views/components/*", "./src/app/components/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@utils/*": ["./src/views/utils/*", "./src/app/utils/*"],
+      "@hooks/*": ["./src/views/hooks/*", "./src/app/hooks/*"],
+      "@context/*": ["./src/views/context/*", "./src/app/context/*"]
     },
     "types": [
       "node"

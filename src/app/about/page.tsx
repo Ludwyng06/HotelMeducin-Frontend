@@ -1,4 +1,4 @@
-import "../styles/pages.css";
+import "@styles/pages.css";
 import Image from "next/image";
 
 export default function AboutPage() {

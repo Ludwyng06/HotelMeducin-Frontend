@@ -1,8 +1,8 @@
 'use client';
-import "../styles/Reservations.css";
+import "@styles/Reservations.css";
 import Link from "next/link";
 import { useEffect, useState } from 'react';
-import { roomCategoryService } from '../services';
+import { roomCategoryService } from '@services/roomCategoryService';
 import { useRouter } from 'next/navigation';
 
 

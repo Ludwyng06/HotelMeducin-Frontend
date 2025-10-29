@@ -1,9 +1,9 @@
 'use client';
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@context/AuthContext";
 import { useRouter } from "next/navigation";
-import "../styles/Register.css";
+import "@styles/Register.css";
 
 export default function RegisterPage() {
 

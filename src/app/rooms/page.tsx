@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import "../styles/pages.css"; // Asegúrate de importar los estilos necesarios
+import "@styles/pages.css"; // Asegúrate de importar los estilos necesarios
 
 export default function RoomsPage() {
   return (

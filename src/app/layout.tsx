@@ -1,9 +1,9 @@
 // src/app/layout.tsx
 'use client';
-import "./styles/globals.css";
+import "@styles/globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
-import LayoutWrapper from "./components/LayoutWrapper";
-import { AuthProvider } from "./context/AuthContext";
+import LayoutWrapper from "@components/LayoutWrapper";
+import { AuthProvider } from "@context/AuthContext";
 import ReactQueryProvider from "./providers/ReactQueryProvider";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });

@@ -1,8 +1,8 @@
 'use client';
 import Link from "next/link";
-import "../styles/Login.css";
+import "@styles/Login.css";
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@context/AuthContext";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {

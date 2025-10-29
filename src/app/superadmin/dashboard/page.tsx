@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { adminService, Admin, CreateAdminData, UpdateAdminData } from '../../services/adminService';
-import '../../styles/DashboardAdmin.css';
+import { useAuth } from '@context/AuthContext';
+import { adminService } from '@services/adminService';
+import type { Admin, CreateAdminData, UpdateAdminData } from '@models/Admin';
+import '@styles/DashboardAdmin.css';
 
 
 export default function SuperadminDashboard() {

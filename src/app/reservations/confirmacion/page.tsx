@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import '../../styles/Reservations.css';
+import '@styles/Reservations.css';
 
 function ConfirmationContent() {
   const searchParams = useSearchParams();

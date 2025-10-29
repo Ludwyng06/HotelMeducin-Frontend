@@ -1,117 +1,63 @@
-import axios from 'axios';
+import API from './api';
+import type { LoginData, RegisterData, AuthResponse } from '@models/Auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+export const authService = {
+  // Login de usuario
+  login: async (loginData: LoginData): Promise<AuthResponse> => {
+    const response = await API.post('/auth/login', loginData);
+    return response.data;
+  },
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-}
-
-const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  // Registro de usuario
+  register: async (registerData: RegisterData): Promise<AuthResponse> => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      if (response.data.token) {
-        // Guardar en localStorage para acceso del cliente
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Guardar también en cookies para el middleware
-        document.cookie = `token=${response.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-      }
+      console.log('🚀 Enviando datos de registro:', registerData);
+      const response = await API.post('/auth/register', registerData);
+      console.log('✅ Respuesta del backend:', response.data);
       return response.data;
     } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw new Error('Error al iniciar sesión');
+      // Evitar imprimir objetos vacíos
+      const payload = error?.response?.data || { message: error?.message || 'Error desconocido' };
+      console.error('❌ Error en registro:', payload);
+      // Propagar un error con mensaje claro para mostrar en UI
+      const err = new Error(payload?.message || 'Error al registrar usuario');
+      (err as any).status = error?.response?.status;
+      throw err;
     }
   },
 
-  async register(data: RegisterData): Promise<any> {
-    try {
-      const response = await axios.post(`${API_URL}/auth/register`, data);
-      return response.data;
-    } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw new Error('Error al registrar usuario');
+  // Obtener perfil del usuario autenticado
+  getProfile: async () => {
+    const response = await API.get('/auth/profile');
+    return response.data;
+  },
+
+  // Logout (opcional, ya que el token se maneja en localStorage)
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   },
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    // Limpiar también la cookie
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+  // Verificar si el usuario está autenticado
+  isAuthenticated: (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('token');
+    return !!token;
   },
 
-  getCurrentUser(): any {
-    const user = localStorage.getItem('user');
-    if (user) {
-      return JSON.parse(user);
-    }
-    
-    // Para pruebas: si no hay usuario pero hay token, crear un usuario de prueba
-    const token = this.getToken();
-    if (token) {
-      const testUser = {
-        id: 1,
-        firstName: 'Usuario',
-        lastName: 'Prueba',
-        email: 'test@example.com',
-        role: 'user'
-      };
-      localStorage.setItem('user', JSON.stringify(testUser));
-      return testUser;
-    }
-    
-    return null;
-  },
-
-  getToken(): string | null {
+  // Obtener token del localStorage
+  getToken: (): string | null => {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('token');
   },
 
-  isAuthenticated(): boolean {
-    return !!this.getToken();
-  },
-
-  // Método temporal para pruebas
-  createTestUser(): void {
-    const testToken = 'test-token-123';
-    const testUser = {
-      id: 1,
-      firstName: 'Usuario',
-      lastName: 'De Prueba',
-      email: 'test@example.com',
-      role: 'user',
-      phoneNumber: '+1234567890'
-    };
-    
-    localStorage.setItem('token', testToken);
-    localStorage.setItem('user', JSON.stringify(testUser));
-    document.cookie = `token=${testToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+  // Guardar datos de autenticación
+  saveAuthData: (user: any, token: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
+    }
   }
 };
-
-export default authService; 

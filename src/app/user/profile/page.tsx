@@ -1,11 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { userService } from '../../services/userService';
-import { reservationService } from '../../services/reservationService';
+import { userService } from '@services/userService';
+import { reservationService } from '@services/reservationService';
 import './profile.css';
 import { useRouter } from 'next/navigation';
-import ReservationList from '../../components/ReservationList';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import ReservationList from '@components/ReservationList';
+import ProtectedRoute from '@components/ProtectedRoute';
 
 const UserProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
