@@ -96,12 +96,14 @@ export default function SuperadminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="dashboard-container">
-          <h1>Dashboard Superadministrador</h1>
-          <p>Gestiona administradores del sistema</p>
+    <div className="superadmin-dashboard">
+      {/* Header con gradiente */}
+      <div className="superadmin-header">
+        <div className="superadmin-header-content">
+          <div>
+            <h1>Dashboard Superadministrador</h1>
+            <p>Gestiona administradores del sistema</p>
+          </div>
           <button
             onClick={() => setShowCreateForm(true)}
             className="btn-primary"
@@ -111,120 +113,124 @@ export default function SuperadminDashboard() {
         </div>
       </div>
 
-      {/* Dashboard Stats */}
-      {dashboardData && (
-        <div className="dashboard-container">
-          <div className="dashboard-stats">
-            <div className="stat-card">
-              <h3>Total Administradores</h3>
-              <p>{dashboardData.admins}</p>
+      {/* Contenedor principal */}
+      <div className="superadmin-grid">
+        {/* Estadísticas Generales */}
+        {dashboardData && (
+          <div className="superadmin-card superadmin-card-full superadmin-card-compact">
+            <h2>📊 Estadísticas Generales</h2>
+            <div className="superadmin-stats-grid">
+              <div className="superadmin-stat-card secondary">
+                <h3>Total Administradores</h3>
+                <p>{dashboardData.admins || 0}</p>
+              </div>
+              <div className="superadmin-stat-card success">
+                <h3>Total Usuarios</h3>
+                <p>{dashboardData.users || 0}</p>
+              </div>
+              <div className="superadmin-stat-card warning">
+                <h3>Total Roles</h3>
+                <p>{dashboardData.roles || 0}</p>
+              </div>
+              <div className="superadmin-stat-card info">
+                <h3>Total Sistema</h3>
+                <p>{dashboardData.totalUsers || 0}</p>
+              </div>
             </div>
-            <div className="stat-card">
-              <h3>Total Usuarios</h3>
-              <p>{dashboardData.users}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Total Roles</h3>
-              <p>{dashboardData.roles}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Total Sistema</h3>
-              <p>{dashboardData.totalUsers}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tabla de Administradores */}
-      <div className="dashboard-container">
-        <h2>Lista de Administradores</h2>
-        <p>Gestiona los administradores del sistema</p>
-        
-        {error && (
-          <div className="px-6 py-4 bg-red-50 border-l-4 border-red-400">
-            <p className="text-red-700">{error}</p>
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Fecha Creación</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {admins.length === 0 ? (
+        {/* Tabla de Administradores */}
+        <div className="superadmin-card superadmin-card-full">
+          <div className="superadmin-card-header">
+            <h2>👥 Lista de Administradores</h2>
+            <p className="superadmin-card-subtitle">Gestiona los administradores del sistema</p>
+          </div>
+          
+          {error && (
+            <div className="superadmin-error">
+              <p>{error}</p>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="superadmin-table">
+              <thead>
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="text-gray-500">
-                      <h3 className="text-sm font-medium text-gray-900">No hay administradores</h3>
-                      <p className="mt-1 text-sm text-gray-500">Comienza creando un nuevo administrador.</p>
-                    </div>
-                  </td>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Teléfono</th>
+                  <th>Estado</th>
+                  <th>Fecha Creación</th>
+                  <th>Acciones</th>
                 </tr>
-              ) : (
-                admins.map((admin) => (
-                  <tr key={admin._id}>
-                    <td>
-                      <div className="text-sm font-medium text-gray-900">
-                        {admin.firstName} {admin.lastName}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="text-sm text-gray-900">{admin.email}</div>
-                    </td>
-                    <td>
-                      <div className="text-sm text-gray-900">{admin.phoneNumber || 'N/A'}</div>
-                    </td>
-                    <td>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        admin.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {admin.isActive ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="text-sm text-gray-900">
-                        {new Date(admin.createdAt).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          onClick={() => setEditingAdmin(admin)}
-                          className="btn-edit"
-                          title="Editar administrador"
-                        >
-                          <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAdmin(admin._id)}
-                          className="btn-delete"
-                          title="Eliminar administrador"
-                        >
-                          <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Eliminar
-                        </button>
+              </thead>
+              <tbody>
+                {admins.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="superadmin-empty">
+                      <div>
+                        <h3>No hay administradores</h3>
+                        <p>Comienza creando un nuevo administrador.</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  admins.map((admin) => (
+                    <tr key={admin._id}>
+                      <td>
+                        <div className="superadmin-table-cell">
+                          {admin.firstName} {admin.lastName}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="superadmin-table-cell">{admin.email}</div>
+                      </td>
+                      <td>
+                        <div className="superadmin-table-cell">{admin.phoneNumber || 'N/A'}</div>
+                      </td>
+                      <td>
+                        <span className={`superadmin-status-badge ${
+                          admin.isActive ? 'status-active' : 'status-inactive'
+                        }`}>
+                          {admin.isActive ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="superadmin-table-cell">
+                          {new Date(admin.createdAt).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          <button
+                            onClick={() => setEditingAdmin(admin)}
+                            className="btn-edit"
+                            title="Editar administrador"
+                          >
+                            <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAdmin(admin._id)}
+                            className="btn-delete"
+                            title="Eliminar administrador"
+                          >
+                            <svg className="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

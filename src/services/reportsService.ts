@@ -38,4 +38,16 @@ export const reportsService = {
     const response = await API.get('/reports/popular-services');
     return response.data;
   },
+
+
+  getReservationsByRoom: async () => {
+    const response = await API.get('/reports/reservations-by-room');
+    return response.data;
+  },
+
+
+  getReservationsStats: async () => {
+    const response = await API.get('/reports/reservations-stats');
+    return response.data;
+  },
 };

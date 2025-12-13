@@ -146,7 +146,7 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 
 ## 🔧 Estructura del Proyecto (Patrón MVC)
 
-### Arquitectura MVC Implementada
+### Arquitectura MVC =
 
 ```
 src/

@@ -77,6 +77,24 @@ const Navbar = () => {
             </div>
           ))}
 
+          {/* Enlace para Administrador - Reportes del Hotel */}
+          {isClient && (user?.role === "admin" || user?.role === "superadmin") && (
+            <div
+              className="nav-link-wrapper"
+              onMouseEnter={() => setActiveMenu("reportes")}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <Link
+                href="/admin/reportes"
+                className={`nav-link ${
+                  activeMenu === "reportes" ? "active" : ""
+                }`}
+              >
+                Reportes del Hotel
+              </Link>
+            </div>
+          )}
+
           {/* Enlace para Superadministrador */}
           {isClient && user?.role === "superadmin" && (
             <div

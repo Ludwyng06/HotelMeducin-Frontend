@@ -131,10 +131,16 @@ export const reservationService = {
     return response.data;
   },
 
-  // Cancelar reservación
+  // Cancelar reservación (para usuarios regulares - cambia status a 'cancelled')
   cancelReservation: async (id: string | number) => {
-    const response = await API.delete(`/reservations/${id}`);
-    return response.data;
+    try {
+      const response = await API.patch(`/reservations/${id}/cancel`);
+      return response.data;
+    } catch (error: any) {
+      // Manejar errores específicos
+      const errorMessage = error.response?.data?.message || error.message || 'Error al cancelar la reserva';
+      throw new Error(errorMessage);
+    }
   },
 
   // Obtener habitación por ID (delegado a roomService para mantener consistencia)

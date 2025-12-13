@@ -324,12 +324,12 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
       </div>
       <ConfirmDialog
         open={dialogOpen}
-        title="Eliminar Reserva"
-        message="¿Estás seguro? Esta acción no se puede deshacer."
+        title="Cancelar Reserva"
+        message="¿Estás seguro de que deseas cancelar esta reserva? El estado de la reserva cambiará a 'Cancelada'."
         onCancel={() => setDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        confirmText="Sí, cancelar"
+        cancelText="No, mantener"
       />
     </div>
   );

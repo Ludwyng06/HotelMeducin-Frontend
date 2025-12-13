@@ -16,6 +16,8 @@ export default function RegisterPage() {
     phoneNumber: "",
   });
   const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const auth = useAuth();
   console.log('useAuth() en RegisterPage:', auth);
   const { register, isLoading } = auth;
@@ -32,6 +34,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setShowSuccess(false);
 
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
@@ -46,86 +49,118 @@ export default function RegisterPage() {
         lastName: formData.lastName,
         phoneNumber: formData.phoneNumber,
       });
-      router.push("/login"); // Redirigir al login después del registro exitoso
+      
+      // Mostrar mensaje de éxito
+      setShowSuccess(true);
+      
+      // Esperar 1.5 segundos para mostrar el mensaje de éxito
+      setTimeout(() => {
+        setIsRedirecting(true);
+        
+        // Esperar 300ms para la animación de fade-out antes de redirigir
+        setTimeout(() => {
+          router.push("/login"); // Redirigir al login después del registro exitoso
+        }, 300);
+      }, 1500);
     } catch (err: any) {
       setError(err.message || "Error al registrar usuario");
     }
   };
 
   return (
-    <div className="register-container">
+    <div className={`register-container ${isRedirecting ? 'fade-out' : ''}`}>
       <div className="register-overlay"></div>
       {/* Botón para cerrar y volver al inicio */}
       <Link href="/" className="close-button">✖</Link>
       <div className="register-card">
-        <h1 className="register-title">Registro</h1>
-        <p className="register-subtitle">Crea tu cuenta en Hotel Meducin</p>
-        {error && <div className="register-error">{error}</div>}
-        <form className="register-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="firstName"
-            placeholder="Nombre"
-            className="register-input"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Apellido"
-            className="register-input"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="phoneNumber"
-            placeholder="Teléfono"
-            className="register-input"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo electrónico"
-            className="register-input"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Contraseña"
-            className="register-input"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirmar contraseña"
-            className="register-input"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          <button 
-            type="submit" 
-            className="register-button"
-            disabled={isLoading}
-          >
-            {isLoading ? "Procesando..." : "Registrarse"}
-          </button>
-        </form>
-        <p className="register-footer">
-          ¿Ya tiene una cuenta? <Link href="/login">Inicie sesión</Link>
-        </p>
+        {showSuccess ? (
+          <div className="success-message">
+            <div className="success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className="success-title">¡Cuenta creada exitosamente!</h2>
+            <p className="success-text">Redirigiendo al login...</p>
+          </div>
+        ) : (
+          <>
+            <h1 className="register-title">Registro</h1>
+            <p className="register-subtitle">Crea tu cuenta en Hotel Meducin</p>
+            {error && <div className="register-error">{error}</div>}
+            <form className="register-form" onSubmit={handleSubmit}>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Nombre"
+                className="register-input"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Apellido"
+                className="register-input"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+              <input
+                type="text"
+                name="phoneNumber"
+                placeholder="Teléfono"
+                className="register-input"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Correo electrónico"
+                className="register-input"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Contraseña"
+                className="register-input"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                className="register-input"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+              <button 
+                type="submit" 
+                className="register-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Procesando..." : "Registrarse"}
+              </button>
+            </form>
+            <p className="register-footer">
+              ¿Ya tiene una cuenta? <Link href="/login">Inicie sesión</Link>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

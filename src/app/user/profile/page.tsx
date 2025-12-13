@@ -208,11 +208,24 @@ const UserProfilePage = () => {
 
   const handleDeleteReservation = async (id: number) => {
     setLoading(true);
+    setError(null);
     try {
-      await reservationService.cancelReservation(id);
-      setReservations(reservations.filter((r) => r.id !== id));
-    } catch (err) {
-      setError('Error al eliminar la reserva.');
+      const result = await reservationService.cancelReservation(id);
+      console.log('✅ Reserva cancelada:', result);
+      
+      // Actualizar la lista de reservas localmente cambiando el status
+      setReservations(reservations.map((r) => 
+        r.id === id || r._id === id 
+          ? { ...r, status: 'CANCELLED' }
+          : r
+      ));
+      
+      // Limpiar error si había uno previo
+      setError(null);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Error al cancelar la reserva';
+      console.error('❌ Error al cancelar reserva:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

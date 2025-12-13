@@ -5,10 +5,10 @@ const API = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 segundos de timeout
+  timeout: 10000, 
 });
 
-// Interceptor para agregar token automáticamente
+
 API.interceptors.request.use(
   (config) => {
     console.log('🌐 Enviando request a:', (config.baseURL || '') + config.url);
