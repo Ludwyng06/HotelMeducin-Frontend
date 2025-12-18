@@ -95,6 +95,24 @@ const Navbar = () => {
             </div>
           )}
 
+          {/* Enlace para Administrador - Gestión de Recepcionistas */}
+          {isClient && (user?.role === "admin" || user?.role === "superadmin") && (
+            <div
+              className="nav-link-wrapper"
+              onMouseEnter={() => setActiveMenu("recepcionistas")}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <Link
+                href="/admin/recepcionistas"
+                className={`nav-link ${
+                  activeMenu === "recepcionistas" ? "active" : ""
+                }`}
+              >
+                Gestión de Recepcionista
+              </Link>
+            </div>
+          )}
+
           {/* Enlace para Superadministrador */}
           {isClient && user?.role === "superadmin" && (
             <div
@@ -109,6 +127,42 @@ const Navbar = () => {
                 }`}
               >
                 Gestionar Administradores
+              </Link>
+            </div>
+          )}
+
+          {/* Enlace para Recepcionista - Habitaciones */}
+          {isClient && user?.role === "recepcionista" && (
+            <div
+              className="nav-link-wrapper"
+              onMouseEnter={() => setActiveMenu("habitaciones")}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <Link
+                href="/recepcionista/habitaciones"
+                className={`nav-link ${
+                  activeMenu === "habitaciones" ? "active" : ""
+                }`}
+              >
+                Habitaciones
+              </Link>
+            </div>
+          )}
+
+          {/* Enlace para Recepcionista - Dashboard */}
+          {isClient && user?.role === "recepcionista" && (
+            <div
+              className="nav-link-wrapper"
+              onMouseEnter={() => setActiveMenu("dashboard-recepcionista")}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <Link
+                href="/recepcionista/dashboard"
+                className={`nav-link ${
+                  activeMenu === "dashboard-recepcionista" ? "active" : ""
+                }`}
+              >
+                Dashboard
               </Link>
             </div>
           )}

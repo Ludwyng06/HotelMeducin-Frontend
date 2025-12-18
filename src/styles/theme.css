@@ -1,0 +1,171 @@
+/* =====================
+   PALETA DE COLORES - ADOBE COLOR
+   Basada en colores complementarios y armonía
+   ===================== */
+
+:root {
+  /* 🎨 COLORES PRIMARIOS - Azul Principal (Complementario con Naranja) */
+  --color-primary: #1E3A8A;        /* Azul profundo */
+  --color-primary-light: #3B82F6;   /* Azul claro */
+  --color-primary-dark: #1E40AF;   /* Azul oscuro */
+  --color-primary-50: #EFF6FF;      /* Azul muy claro */
+  --color-primary-100: #DBEAFE;     /* Azul claro suave */
+  
+  /* 🎨 COLORES COMPLEMENTARIOS - Naranja (Complementario del Azul) */
+  --color-accent: #F97316;          /* Naranja vibrante */
+  --color-accent-light: #FB923C;    /* Naranja claro */
+  --color-accent-dark: #EA580C;     /* Naranja oscuro */
+  --color-accent-50: #FFF7ED;       /* Naranja muy claro */
+  
+  /* 🎨 COLORES ARMÓNICOS - Azul Verdoso (Armonía con Azul) */
+  --color-secondary: #0D9488;       /* Verde azulado */
+  --color-secondary-light: #14B8A6; /* Verde azulado claro */
+  --color-secondary-dark: #0F766E;  /* Verde azulado oscuro */
+  
+  /* 🎨 COLORES DE ESTADO */
+  --color-success: #10B981;          /* Verde éxito */
+  --color-success-light: #34D399;    /* Verde éxito claro */
+  --color-success-dark: #059669;     /* Verde éxito oscuro */
+  --color-success-50: #ECFDF5;        /* Verde éxito muy claro */
+  
+  --color-warning: #F59E0B;          /* Amarillo advertencia */
+  --color-warning-light: #FBBF24;    /* Amarillo advertencia claro */
+  --color-warning-dark: #D97706;     /* Amarillo advertencia oscuro */
+  --color-warning-50: #FFFBEB;        /* Amarillo advertencia muy claro */
+  
+  --color-danger: #EF4444;            /* Rojo peligro */
+  --color-danger-light: #F87171;     /* Rojo peligro claro */
+  --color-danger-dark: #DC2626;      /* Rojo peligro oscuro */
+  --color-danger-50: #FEF2F2;         /* Rojo peligro muy claro */
+  
+  --color-info: #3B82F6;              /* Azul información */
+  --color-info-light: #60A5FA;        /* Azul información claro */
+  --color-info-dark: #2563EB;         /* Azul información oscuro */
+  --color-info-50: #EFF6FF;            /* Azul información muy claro */
+  
+  /* 🎨 COLORES NEUTROS */
+  --color-bg: #F8FAFC;                /* Fondo principal */
+  --color-surface: #FFFFFF;           /* Superficie (tarjetas, modales) */
+  --color-surface-elevated: #FFFFFF;  /* Superficie elevada */
+  --color-border: #E2E8F0;            /* Bordes */
+  --color-border-light: #F1F5F9;      /* Bordes claros */
+  --color-border-dark: #CBD5E1;       /* Bordes oscuros */
+  
+  /* 🎨 COLORES DE TEXTO */
+  --color-text: #1E293B;             /* Texto principal */
+  --color-text-light: #64748B;        /* Texto secundario */
+  --color-text-muted: #94A3B8;        /* Texto deshabilitado */
+  --color-text-inverse: #FFFFFF;      /* Texto sobre fondos oscuros */
+  
+  /* 🎨 COLORES DE TABLA */
+  --color-table-header: #F1F5F9;     /* Encabezado de tabla */
+  --color-table-row: #FFFFFF;         /* Fila de tabla */
+  --color-table-row-alt: #F8FAFC;    /* Fila alterna */
+  --color-table-row-hover: #F1F5F9;  /* Fila hover */
+  
+  /* 🎨 COLORES DE FOOTER */
+  --color-footer-bg: #0F172A;        /* Fondo footer */
+  --color-footer-text: #F1F5F9;      /* Texto footer */
+  --color-footer-border: #1E293B;     /* Borde footer */
+  
+  /* 🎨 SOMBRAS */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* 🎨 TRANSICIONES */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  
+  /* 🎨 BORDES REDONDEADOS */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+}
+
+/* =====================
+   TEMA OSCURO (VISTA NOCTURNA)
+   ===================== */
+[data-theme="dark"] {
+  /* 🎨 COLORES PRIMARIOS */
+  --color-primary: #3B82F6;
+  --color-primary-light: #60A5FA;
+  --color-primary-dark: #2563EB;
+  --color-primary-50: #1E3A8A;
+  --color-primary-100: #1E40AF;
+  
+  /* 🎨 COLORES COMPLEMENTARIOS */
+  --color-accent: #FB923C;
+  --color-accent-light: #FDBA74;
+  --color-accent-dark: #F97316;
+  --color-accent-50: #EA580C;
+  
+  /* 🎨 COLORES ARMÓNICOS */
+  --color-secondary: #14B8A6;
+  --color-secondary-light: #2DD4BF;
+  --color-secondary-dark: #0D9488;
+  
+  /* 🎨 COLORES NEUTROS */
+  --color-bg: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-elevated: #334155;
+  --color-border: #475569;
+  --color-border-light: #334155;
+  --color-border-dark: #64748B;
+  
+  /* 🎨 COLORES DE TEXTO */
+  --color-text: #F1F5F9;
+  --color-text-light: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-inverse: #1E293B;
+  
+  /* 🎨 COLORES DE TABLA */
+  --color-table-header: #1E293B;
+  --color-table-row: #1E293B;
+  --color-table-row-alt: #0F172A;
+  --color-table-row-hover: #334155;
+  
+  /* 🎨 COLORES DE FOOTER */
+  --color-footer-bg: #020617;
+  --color-footer-text: #CBD5E1;
+  --color-footer-border: #1E293B;
+  
+  /* 🎨 SOMBRAS (más sutiles en modo oscuro) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* =====================
+   UTILIDADES DE COLOR
+   ===================== */
+.bg-primary { background-color: var(--color-primary); }
+.bg-primary-light { background-color: var(--color-primary-light); }
+.bg-primary-dark { background-color: var(--color-primary-dark); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-accent-light { background-color: var(--color-accent-light); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-success { background-color: var(--color-success); }
+.bg-warning { background-color: var(--color-warning); }
+.bg-danger { background-color: var(--color-danger); }
+.bg-info { background-color: var(--color-info); }
+
+.text-primary { color: var(--color-primary); }
+.text-accent { color: var(--color-accent); }
+.text-secondary { color: var(--color-secondary); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-danger { color: var(--color-danger); }
+.text-info { color: var(--color-info); }
+
+.border-primary { border-color: var(--color-primary); }
+.border-accent { border-color: var(--color-accent); }
+.border-success { border-color: var(--color-success); }
+.border-warning { border-color: var(--color-warning); }
+.border-danger { border-color: var(--color-danger); }
+

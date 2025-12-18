@@ -26,25 +26,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem('token');
       
       if (cachedUser && token) {
-        setUser(JSON.parse(cachedUser));
+        // Usar datos en caché inmediatamente para mejor UX
+        try {
+          setUser(JSON.parse(cachedUser));
+        } catch {
+          // Si hay error parseando, limpiar caché
+          sessionStorage.removeItem('auth_user');
+        }
         setIsLoading(false);
         
         // Verificar token en background sin bloquear UI (optimizado)
         // Usar requestIdleCallback si está disponible, sino setTimeout
         if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
           (window as any).requestIdleCallback(() => {
-            refreshUser();
-          });
+            refreshUser().catch(() => {
+              // Silenciar errores de red en background
+            });
+          }, { timeout: 2000 });
         } else {
           setTimeout(() => {
-            refreshUser();
-          }, 1000); // Aumentar delay para evitar bucles
+            refreshUser().catch(() => {
+              // Silenciar errores de red en background
+            });
+          }, 1500); // Delay para evitar bucles y dar tiempo al backend
         }
       } else {
+        // Si no hay caché, intentar obtener del backend
         await refreshUser();
       }
-    } catch {
-      setUser(null);
+    } catch (error: any) {
+      // Si hay error de red, intentar usar caché si existe
+      // No mostrar errores si están marcados como silenciosos
+      if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.silent) {
+        const cachedUser = sessionStorage.getItem('auth_user');
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+          } catch {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
       setIsLoading(false);
     }
   };
@@ -70,9 +96,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         sessionStorage.removeItem('auth_user');
       }
-    } catch {
-      setUser(null);
-      sessionStorage.removeItem('auth_user');
+    } catch (error: any) {
+      // Si es error de red, mantener usuario en caché si existe
+      // No mostrar errores ruidosos si está marcado como silencioso
+      if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.code === 'ECONNREFUSED' || error?.silent) {
+        // Si hay usuario en caché, mantenerlo sin mostrar errores
+        const cachedUser = sessionStorage.getItem('auth_user');
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+            // No mostrar warning si el error es silencioso
+            if (!error?.silent) {
+              console.warn('⚠️ Usando datos en caché. Backend no disponible.');
+            }
+          } catch {
+            setUser(null);
+            sessionStorage.removeItem('auth_user');
+          }
+        } else {
+          setUser(null);
+          sessionStorage.removeItem('auth_user');
+        }
+      } else {
+        // Para otros errores (401, 403, etc.), limpiar sesión
+        setUser(null);
+        sessionStorage.removeItem('auth_user');
+        localStorage.removeItem('token');
+      }
     } finally {
       setIsLoading(false);
     }

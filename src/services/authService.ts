@@ -4,8 +4,18 @@ import type { LoginData, RegisterData, AuthResponse } from '@models/Auth';
 export const authService = {
   // Login de usuario
   login: async (loginData: LoginData): Promise<AuthResponse> => {
-    const response = await API.post('/auth/login', loginData);
-    return response.data;
+    try {
+      const response = await API.post('/auth/login', loginData);
+      return response.data;
+    } catch (error: any) {
+      // Si es error de red, mostrar mensaje claro
+      if (error?.code === 'ERR_NETWORK' || error?.code === 'ECONNREFUSED' || error?.message?.includes('Network Error')) {
+        const baseURL = API.defaults.baseURL || 'http://localhost:3000';
+        throw new Error(`No se pudo conectar con el backend en ${baseURL}. Verifica que el servidor esté corriendo.`);
+      }
+      // Para otros errores, propagar el error original
+      throw error;
+    }
   },
 
   // Registro de usuario
@@ -28,8 +38,17 @@ export const authService = {
 
   // Obtener perfil del usuario autenticado
   getProfile: async () => {
-    const response = await API.get('/auth/profile');
-    return response.data;
+    try {
+      const response = await API.get('/auth/profile');
+      return response.data;
+    } catch (error: any) {
+      // Si es error de red, no intentar parsear response
+      if (error?.isNetworkError || error?.code === 'ERR_NETWORK' || error?.code === 'ECONNREFUSED') {
+        throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo.');
+      }
+      // Para otros errores, propagar el error original
+      throw error;
+    }
   },
 
   // Logout (opcional, ya que el token se maneja en localStorage)

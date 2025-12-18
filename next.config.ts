@@ -3,8 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
-    NEXT_PUBLIC_FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:4200',
+    // Forzar HTTP para desarrollo local (no HTTPS)
+    NEXT_PUBLIC_API_URL: 'http://localhost:3000',
+    NEXT_PUBLIC_FRONTEND_URL: 'http://localhost:4200',
   },
   // Configuración explícita para evitar conflictos con rutas de API
   async rewrites() {

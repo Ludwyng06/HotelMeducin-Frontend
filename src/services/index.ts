@@ -1,8 +1,15 @@
 import axios from 'axios';
 
+// Forzar HTTP para desarrollo local (no HTTPS)
+const getBaseURL = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // Asegurar que siempre use HTTP, no HTTPS
+  return url.replace('https://', 'http://').replace(':3443', ':3000');
+};
+
 // Configuración base de axios
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

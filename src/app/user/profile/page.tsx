@@ -1,11 +1,18 @@
 'use client';
+
+// Forzar renderizado dinámico (no SSR)
+export const dynamic = 'force-dynamic';
 import React, { useEffect, useState } from 'react';
 import { userService } from '@services/userService';
 import { reservationService } from '@services/reservationService';
+import API from '@services/api';
 import './profile.css';
 import { useRouter } from 'next/navigation';
 import ReservationList from '@components/ReservationList';
 import ProtectedRoute from '@components/ProtectedRoute';
+import GraphVisualization from '@components/GraphVisualization';
+import { useToast } from '../../../hooks/useToast';
+import ToastContainer from '../../../components/Toast/ToastContainer';
 
 const UserProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
@@ -17,7 +24,10 @@ const UserProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [searchDate, setSearchDate] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [graphRefreshKey, setGraphRefreshKey] = useState(0);
   const router = useRouter();
+  const { toasts, success, error: showError, removeToast } = useToast();
 
   // Función helper para normalizar datos de reservaciones
   const normalizeReservations = (data: any): any[] => {
@@ -62,6 +72,13 @@ const UserProfilePage = () => {
         });
         
         setProfile(user);
+        console.log('👤 Profile establecido:', {
+          _id: user._id,
+          id: user.id,
+          email: user.email,
+          _idString: user._id?.toString(),
+          idString: user.id?.toString()
+        });
         setForm({
           firstName: user.firstName || '',
           lastName: user.lastName || '',
@@ -100,6 +117,26 @@ const UserProfilePage = () => {
         });
         
         setReservations(reservationsArray);
+        
+        // 🕸️ SINCRONIZAR AUTOMÁTICAMENTE CON NEO4J después de cargar el perfil
+        if (user && (user._id || user.id)) {
+          try {
+            const userId = user._id?.toString() || user.id?.toString();
+            if (userId) {
+              console.log('🕸️ Sincronizando automáticamente al cargar perfil:', userId);
+              // Sincronizar en segundo plano sin bloquear la UI
+              API.post(`/neo4j/sync/user-reservations/${userId}`).then(() => {
+                console.log('✅ Usuario sincronizado automáticamente con Neo4j');
+                // Refrescar el grafo después de sincronizar
+                setGraphRefreshKey(prev => prev + 1);
+              }).catch(err => {
+                console.warn('⚠️ Error sincronizando al cargar perfil (no crítico):', err);
+              });
+            }
+          } catch (syncErr) {
+            console.warn('⚠️ Error en sincronización automática (no crítico):', syncErr);
+          }
+        }
       } catch (err: any) {
         console.error('❌ Error al cargar datos del perfil:', err);
         setError(`Error al cargar los datos del perfil: ${err.response?.data?.message || err.message || 'Error desconocido'}`);
@@ -182,8 +219,23 @@ const UserProfilePage = () => {
       setForm({ ...form, ...updatedProfile });
       setEditMode(false);
       
+      // 🕸️ SINCRONIZAR AUTOMÁTICAMENTE CON NEO4J después de actualizar
+      try {
+        const userId = updatedProfile._id?.toString() || profile._id?.toString() || profile.id?.toString();
+        if (userId) {
+          console.log('🕸️ Sincronizando usuario con Neo4j después de actualizar:', userId);
+          await API.post(`/neo4j/sync/user-reservations/${userId}`);
+          console.log('✅ Usuario sincronizado con Neo4j');
+          // Refrescar el grafo
+          setGraphRefreshKey(prev => prev + 1);
+        }
+      } catch (syncError: any) {
+        console.warn('⚠️ Error sincronizando con Neo4j (no crítico):', syncError);
+        // No mostrar error al usuario, solo loguear
+      }
+      
       // Mostrar mensaje de éxito
-      alert('Perfil actualizado exitosamente');
+      success('Perfil actualizado exitosamente');
     } catch (err: any) {
       console.error('❌ Error al guardar perfil:', err);
       setError(`Error al guardar los cambios: ${err.response?.data?.message || err.message || 'Error desconocido'}`);
@@ -247,26 +299,26 @@ const UserProfilePage = () => {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      background: '#f5f7fa',
-      fontFamily: "'Inter','Segoe UI',sans-serif"
+      background: 'var(--color-bg)',
+      fontFamily: 'var(--font-main)'
     }}>
       <div style={{
         textAlign: 'center',
         padding: '2rem',
-        background: 'white',
+        background: 'var(--color-surface)',
         borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+        boxShadow: 'var(--shadow-lg)'
       }}>
         <div style={{
           width: '40px',
           height: '40px',
-          border: '4px solid #e2e8f0',
-          borderTop: '4px solid #3182ce',
+          border: '4px solid var(--color-border)',
+          borderTop: '4px solid var(--color-primary-light)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 1rem'
         }}></div>
-        <p style={{ color: '#4a5568', fontSize: '1.1rem' }}>Cargando perfil...</p>
+        <p style={{ color: 'var(--color-text-light)', fontSize: '1.1rem' }}>Cargando perfil...</p>
       </div>
       <style jsx>{`
         @keyframes spin {
@@ -283,16 +335,16 @@ const UserProfilePage = () => {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      background: '#f5f7fa',
-      fontFamily: "'Inter','Segoe UI',sans-serif"
+      background: 'var(--color-bg)',
+      fontFamily: 'var(--font-main)'
     }}>
       <div style={{
         textAlign: 'center',
         padding: '2rem',
-        background: 'white',
+        background: 'var(--color-surface)',
         borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        color: '#e53e3e',
+        boxShadow: 'var(--shadow-lg)',
+        color: 'var(--color-danger)',
         fontSize: '1.1rem'
       }}>
         ❌ {error}
@@ -302,9 +354,9 @@ const UserProfilePage = () => {
 
   return (
     <ProtectedRoute>
-      <div style={{width:'100vw',minHeight:'100vh',background:'#f5f7fa',fontFamily:"'Inter','Segoe UI',sans-serif"}}>
-        <div className="profile-container" style={{maxWidth:'1200px',margin:'40px auto',padding:'40px 32px',background:'#fff',borderRadius:20,boxShadow:'0 2px 24px rgba(44,82,130,0.10)'}}>
-          <h2 className="profile-title" style={{fontSize:'2.3rem',marginBottom:32,color:'#1a365d',fontWeight:800,letterSpacing:'-1px'}}>Perfil de Usuario</h2>
+      <div style={{width:'100vw',minHeight:'100vh',background:'var(--color-bg)',fontFamily:'var(--font-main)'}}>
+        <div className="profile-container" style={{maxWidth:'1200px',margin:'40px auto',padding:'40px 32px',background:'var(--color-surface)',borderRadius:20,boxShadow:'var(--shadow-lg)'}}>
+          <h2 className="profile-title" style={{fontSize:'2.3rem',marginBottom:32,color:'var(--color-primary-dark)',fontWeight:800,letterSpacing:'-1px'}}>Perfil de Usuario</h2>
           {editMode ? (
             <form onSubmit={handleSave} className="profile-form">
               <div className="form-group">
@@ -329,20 +381,110 @@ const UserProfilePage = () => {
               </div>
             </form>
           ) : (
-            <div className="profile-info" style={{marginBottom:32,background:'#f7fafc',padding:24,borderRadius:12,boxShadow:'0 1px 6px rgba(44,82,130,0.04)'}}>
-              <p style={{fontWeight:600,fontSize:'1.1rem',color:'#2c5282',marginBottom:8}}><b>Nombre:</b> {profile?.firstName}</p>
-              <p style={{fontWeight:600,fontSize:'1.1rem',color:'#2c5282',marginBottom:8}}><b>Apellido:</b> {profile?.lastName}</p>
-              <p style={{fontWeight:600,fontSize:'1.1rem',color:'#2c5282',marginBottom:8}}><b>Email:</b> {profile?.email}</p>
-              <p style={{fontWeight:600,fontSize:'1.1rem',color:'#2c5282',marginBottom:8}}><b>Teléfono:</b> {profile?.phoneNumber || '-'}</p>
-              <button className="edit-btn" onClick={() => setEditMode(true)} style={{marginTop:18,background:'#38a169',fontWeight:700,fontSize:'1.1rem',padding:'10px 28px'}}>Editar perfil</button>
+            <div className="profile-info" style={{marginBottom:32,background:'var(--color-surface)',padding:24,borderRadius:12,boxShadow:'var(--shadow-md)',border:'1px solid var(--color-border)'}}>
+              <p style={{fontWeight:600,fontSize:'1.1rem',color:'var(--color-text)',marginBottom:12}}><b style={{color:'var(--color-primary-light)'}}>Nombre:</b> <span style={{color:'var(--color-text-light)'}}>{profile?.firstName}</span></p>
+              <p style={{fontWeight:600,fontSize:'1.1rem',color:'var(--color-text)',marginBottom:12}}><b style={{color:'var(--color-primary-light)'}}>Apellido:</b> <span style={{color:'var(--color-text-light)'}}>{profile?.lastName}</span></p>
+              <p style={{fontWeight:600,fontSize:'1.1rem',color:'var(--color-text)',marginBottom:12}}><b style={{color:'var(--color-primary-light)'}}>Email:</b> <span style={{color:'var(--color-text-light)'}}>{profile?.email}</span></p>
+              <p style={{fontWeight:600,fontSize:'1.1rem',color:'var(--color-text)',marginBottom:12}}><b style={{color:'var(--color-primary-light)'}}>Teléfono:</b> <span style={{color:'var(--color-text-light)'}}>{profile?.phoneNumber || '-'}</span></p>
+              <div style={{display:'flex',gap:'1rem',marginTop:18,flexWrap:'wrap'}}>
+                <button className="edit-btn" onClick={() => setEditMode(true)} style={{background:'var(--color-accent)',color:'var(--color-surface)',fontWeight:700,fontSize:'1.1rem',padding:'10px 28px',border:'none',borderRadius:'8px',cursor:'pointer',transition:'background-color 0.2s'}} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent-dark)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-accent)'}>Editar perfil</button>
+              </div>
             </div>
           )}
-          <h3 className="profile-subtitle" style={{fontSize:'1.5rem',marginBottom:18,color:'#2c5282',fontWeight:700}}>Historial de Reservas</h3>
+          <h3 className="profile-subtitle" style={{fontSize:'1.5rem',marginBottom:18,color:'var(--color-primary-dark)',fontWeight:700}}>Visualización de Relaciones</h3>
+          <div style={{width:'100%',marginBottom:32,background:'var(--color-surface)',padding:24,borderRadius:12,boxShadow:'var(--shadow-md)',border:'1px solid var(--color-border)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16,gap:'1rem',flexWrap:'wrap'}}>
+              <p style={{margin:0,color:'var(--color-text-light)',fontSize:'0.95rem',flex:1}}>
+                Este grafo muestra tus relaciones con las reservaciones y habitaciones. 
+                Los nodos azules representan usuarios, los verdes reservaciones y los amarillos habitaciones.
+              </p>
+              {profile && (
+                <button
+                  onClick={async (e) => {
+                    try {
+                      const userId = profile._id?.toString() || profile.id?.toString();
+                      if (!userId) {
+                        showError('No se pudo obtener el ID del usuario');
+                        return;
+                      }
+                      
+                      setSyncing(true);
+                      const button = e.currentTarget;
+                      button.disabled = true;
+                      button.textContent = '⏳ Sincronizando...';
+                      
+                      const response = await API.post(`/neo4j/sync/user-reservations/${userId}`);
+                      if (response.data.success) {
+                        success('Reservaciones sincronizadas exitosamente', 3000);
+                        // Recargar solo el grafo sin recargar toda la página
+                        setGraphRefreshKey(prev => prev + 1);
+                        setSyncing(false);
+                        button.disabled = false;
+                        button.textContent = '🔄 Sincronizar Reservaciones';
+                      } else {
+                        showError('Error al sincronizar: ' + (response.data.message || 'Error desconocido'));
+                        setSyncing(false);
+                        button.disabled = false;
+                        button.textContent = '🔄 Sincronizar Reservaciones';
+                      }
+                    } catch (err: any) {
+                      console.error('Error sincronizando:', err);
+                      showError('Error al sincronizar reservaciones: ' + (err.response?.data?.message || err.message || 'Error desconocido'));
+                      setSyncing(false);
+                      const button = e.currentTarget;
+                      button.disabled = false;
+                      button.textContent = '🔄 Sincronizar Reservaciones';
+                    }
+                  }}
+                  disabled={syncing}
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                    }
+                  }}
+                >
+                  🔄 Sincronizar Reservaciones
+                </button>
+              )}
+            </div>
+            {profile && (
+              <GraphVisualization 
+                userId={profile._id?.toString() || profile.id?.toString() || (profile._id ? String(profile._id) : undefined)} 
+                height="500px"
+                showControls={true}
+                refreshKey={graphRefreshKey}
+              />
+            )}
+            {!profile && (
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--color-text-light)' }}>
+                Cargando información del usuario...
+              </div>
+            )}
+          </div>
+          <h3 className="profile-subtitle" style={{fontSize:'1.5rem',marginBottom:18,color:'var(--color-primary-dark)',fontWeight:700}}>Historial de Reservas</h3>
           <div style={{width:'100%',overflowX:'auto',marginBottom:24}}>
             <ReservationList reservas={reservations} loading={loading} onDelete={handleDeleteReservation} />
           </div>
         </div>
       </div>
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </ProtectedRoute>
   );
 };

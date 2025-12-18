@@ -1,0 +1,77 @@
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+[data-theme="dark"] .loading-spinner-overlay {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.spinner-ring {
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner-sm .spinner-ring {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-width: 2px;
+}
+
+.loading-spinner-md .spinner-ring {
+  width: 3rem;
+  height: 3rem;
+  border-width: 3px;
+}
+
+.loading-spinner-lg .spinner-ring {
+  width: 4rem;
+  height: 4rem;
+  border-width: 4px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: var(--color-text-light);
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
+}
+
+/* Spinner con múltiples anillos */
+.loading-spinner .spinner-ring:nth-child(2) {
+  animation-delay: 0.2s;
+  border-top-color: var(--color-accent);
+  margin-top: -1.5rem;
+}
+
+.loading-spinner .spinner-ring:nth-child(3) {
+  animation-delay: 0.4s;
+  border-top-color: var(--color-secondary);
+  margin-top: -1.5rem;
+}
+

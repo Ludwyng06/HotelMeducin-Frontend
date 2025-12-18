@@ -1,28 +1,40 @@
 import axios from 'axios';
 
+// Forzar HTTP para desarrollo local (no HTTPS)
+const getBaseURL = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // Asegurar que siempre use HTTP, no HTTPS
+  return url.replace('https://', 'http://').replace(':3443', ':3000');
+};
+
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, 
+  timeout: 10000,
 });
 
 
 API.interceptors.request.use(
   (config) => {
-    console.log('🌐 Enviando request a:', (config.baseURL || '') + config.url);
-    console.log('🔥 CÓDIGO ACTUALIZADO - VERSIÓN 2.0');
+    const fullUrl = (config.baseURL || '') + config.url;
+    console.log('🌐 Enviando request a:', fullUrl);
+    console.log('🌐 Método:', config.method?.toUpperCase());
+    console.log('🌐 Headers:', config.headers);
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('🔑 Token agregado a la petición');
+      } else {
+        console.log('🔓 Petición sin token (público)');
       }
     }
     return config;
   },
   (error) => {
-    console.error('❌ Error en request:', error);
+    console.error('❌ Error en request interceptor:', error);
     return Promise.reject(error);
   }
 );
@@ -31,39 +43,104 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => {
     console.log('✅ Respuesta recibida:', response.status, response.config.url);
+    console.log('✅ Headers de respuesta:', response.headers);
+    console.log('✅ Datos de respuesta:', response.data);
     return response;
   },
   (error) => {
+    // Manejar error 401 primero (token expirado)
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('auth_user');
+        // Solo redirigir si no estamos ya en login
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+      return Promise.reject(error);
+    }
+
     // Evitar logs vacíos o ruidosos
-    const isNetworkError = error?.code === 'ERR_NETWORK' || error?.code === 'ERR_INTERNET_DISCONNECTED';
+    const isNetworkError = error?.code === 'ERR_NETWORK' || 
+                          error?.code === 'ERR_INTERNET_DISCONNECTED' ||
+                          error?.code === 'ECONNREFUSED' ||
+                          error?.message?.includes('Network Error') ||
+                          error?.message?.includes('Failed to fetch');
     const isTimeoutError = error?.code === 'ECONNABORTED';
     const isCanceled = error?.code === 'ERR_CANCELED';
     const status = error?.response?.status;
     const url = error?.config?.url;
+    const baseURL = error?.config?.baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-    // Si es cancelado/timeout/red: no loggear como error ruidoso
+    // Si es cancelado: silencioso
     if (isCanceled) {
-      // silencioso
-    } else if (isNetworkError || isTimeoutError) {
-      console.warn('⚠️ Error de conexión:', error?.message || 'Sin conexión');
-    } else if (status || error?.message) {
-      console.error('❌ Error en respuesta:', {
-        message: error?.message || 'Sin mensaje',
-        code: error?.code || 'Sin código',
-        status: status || 'Sin status',
-        url: url || 'Sin URL'
-      });
+      return Promise.reject(error);
     }
-
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+    
+    // Si es error de red o timeout
+    if (isNetworkError || isTimeoutError) {
+      // Solo mostrar error una vez por sesión para evitar spam en consola
+      const errorKey = `network_error_shown_${baseURL}`;
+      if (typeof window !== 'undefined' && !sessionStorage.getItem(errorKey)) {
+        const fullUrl = baseURL + (url || '');
+        const isHttps = baseURL.startsWith('https://');
+        
+        console.error('❌ Error de conexión con el backend');
+        console.error(`   URL intentada: ${fullUrl}`);
+        console.error(`   Backend esperado: ${baseURL}`);
+        console.error(`   Código de error: ${error?.code || 'desconocido'}`);
+        
+        if (error?.code === 'ECONNREFUSED') {
+          console.error('   💡 El backend no está corriendo o no está escuchando en ese puerto');
+          console.error('   💡 Verifica que el backend esté iniciado: cd Backend && npm run start:dev');
+        } else if (error?.code === 'ERR_NETWORK') {
+          console.error('   💡 Error de red. Verifica tu conexión a internet');
+          console.error('   💡 O verifica que el backend esté accesible en:', baseURL);
+        } else if (isTimeoutError) {
+          console.error('   💡 El backend no respondió a tiempo (timeout)');
+          console.error('   💡 Verifica que el backend no esté bloqueado o sobrecargado');
+        }
+        
+        // Nota: Ya no usamos HTTPS en desarrollo local
+        
+        sessionStorage.setItem(errorKey, 'true');
       }
+      
+      // Marcar el error para que los servicios sepan que es un error de red
+      (error as any).isNetworkError = true;
+      
+      // Retornar el error original sin crear uno nuevo
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+    
+    // Si es error HTTP del servidor
+    if (status || error?.response) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          `Error ${status || 'desconocido'}`;
+      
+      console.error('❌ Error en respuesta del servidor');
+      console.error('   Status:', status || 'N/A');
+      console.error('   Mensaje:', errorMessage);
+      console.error('   URL:', url || 'N/A');
+      
+      const httpError = new Error(errorMessage);
+      (httpError as any).status = status;
+      (httpError as any).response = error?.response;
+      return Promise.reject(httpError);
+    }
+    
+    // Error desconocido
+    if (error?.message) {
+      console.error('❌ Error desconocido:', error.message);
+      return Promise.reject(error);
+    }
+    
+    // Si no hay información útil, crear un error genérico
+    const genericError = new Error('Error desconocido al comunicarse con el servidor');
+    return Promise.reject(genericError);
   }
 );
 

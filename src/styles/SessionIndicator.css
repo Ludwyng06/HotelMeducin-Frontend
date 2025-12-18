@@ -1,0 +1,106 @@
+.session-indicator {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-success);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  animation: fadeInUp 0.5s ease-out;
+  cursor: default;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.session-indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-icon {
+  font-size: 1.25rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.session-user {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.session-role {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+.session-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+  opacity: 0.5;
+  animation: ripple 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .session-indicator {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .session-user,
+  .session-role {
+    display: none;
+  }
+}
+

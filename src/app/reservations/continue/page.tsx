@@ -352,6 +352,120 @@ function ReservationContinueContent() {
     return true;
   };
 
+  // Función helper para determinar si es reserva del mismo día
+  const isSameDayReservation = (): boolean => {
+    if (!checkInDate) return false;
+    const checkIn = new Date(checkInDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    checkIn.setHours(0, 0, 0, 0);
+    return checkIn.getTime() === today.getTime();
+  };
+
+  // Función helper para calcular días hasta check-in
+  const getDaysUntilCheckIn = (): number => {
+    if (!checkInDate) return 0;
+    const checkIn = new Date(checkInDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    checkIn.setHours(0, 0, 0, 0);
+    const diffTime = checkIn.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Componente de información de reserva
+  const ReservationInfoCard = () => {
+    const isSameDay = isSameDayReservation();
+    const daysUntil = getDaysUntilCheckIn();
+    
+    return (
+      <div className={`reservation-info-card ${isSameDay ? 'same-day' : 'future'}`}>
+        <div className="info-header">
+          <h3>
+            {isSameDay ? '⏰ Reserva del Mismo Día' : '📅 Reserva Anticipada'}
+          </h3>
+        </div>
+        
+        <div className="info-content">
+          {isSameDay ? (
+            <>
+              <div className="info-alert warning">
+                <strong>⚠️ IMPORTANTE - Tienes 1 hora para confirmar</strong>
+                <p>
+                  Como esta es una reserva para hoy, tienes <strong>1 hora desde ahora</strong> para 
+                  acercarte a recepción y confirmar tu reserva con el pago.
+                </p>
+                <ul>
+                  <li>✅ Tu reserva quedará en estado <strong>PENDIENTE</strong> hasta que la confirmes en recepción</li>
+                  <li>⏱️ Si no confirmas en recepción dentro de 1 hora, la reserva se cancelará automáticamente</li>
+                  <li>💳 Debes presentarte en recepción con el pago para confirmar</li>
+                  <li>📞 Si necesitas más tiempo, contacta a recepción inmediatamente</li>
+                </ul>
+              </div>
+              
+              <div className="info-steps">
+                <h4>Pasos a seguir:</h4>
+                <ol>
+                  <li>Completa el formulario y haz clic en "Finalizar Reserva"</li>
+                  <li>Recibirás un email con los detalles de tu reserva</li>
+                  <li><strong>Acude a recepción dentro de 1 hora</strong> con tu documento de identidad y el pago</li>
+                  <li>El recepcionista confirmará tu reserva al recibir el pago</li>
+                </ol>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="info-alert info">
+                <strong>ℹ️ Información sobre tu reserva</strong>
+                <p>
+                  Tu reserva es para dentro de <strong>{daysUntil} {daysUntil === 1 ? 'día' : 'días'}</strong>. 
+                  La reserva quedará en estado <strong>PENDIENTE</strong> hasta que la confirmes en recepción.
+                </p>
+              </div>
+              
+              <div className="info-rules">
+                <h4>📋 Reglas de tu reserva:</h4>
+                <ul>
+                  <li>
+                    ✅ <strong>Estado inicial:</strong> Tu reserva quedará como <strong>PENDIENTE</strong> 
+                    hasta que la confirmes en recepción con el pago
+                  </li>
+                  <li>
+                    🚫 <strong>Cancelación:</strong> Puedes cancelar tu reserva hasta 
+                    <strong> 24 horas antes</strong> de la fecha de check-in
+                  </li>
+                  <li>
+                    ⏰ <strong>Después de 24 horas:</strong> Si faltan menos de 24 horas para el check-in, 
+                    ya no podrás cancelar la reserva por tu cuenta
+                  </li>
+                  <li>
+                    💳 <strong>Confirmación:</strong> Debes acudir a recepción el día del check-in 
+                    (o antes) para confirmar con el pago
+                  </li>
+                  <li>
+                    📧 <strong>Notificaciones:</strong> Recibirás recordatorios por email antes de tu fecha de check-in
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="info-steps">
+                <h4>Pasos a seguir:</h4>
+                <ol>
+                  <li>Completa el formulario y haz clic en "Finalizar Reserva"</li>
+                  <li>Recibirás un email con los detalles de tu reserva pendiente</li>
+                  <li>Puedes cancelar hasta 24 horas antes del check-in desde tu perfil</li>
+                  <li>El día del check-in, acude a recepción con tu documento y el pago</li>
+                  <li>El recepcionista confirmará tu reserva al recibir el pago</li>
+                </ol>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const downloadPDF = async () => {
     if (!reservationId) return;
     
@@ -419,10 +533,17 @@ function ReservationContinueContent() {
         setSuccess('¡Reserva creada exitosamente! Se ha enviado un email de confirmación con PDF.');
         setSaving(false);
         
-        // Ocultar formulario y mostrar opciones
+        // Redirigir a página de confirmación con parámetros
+        const nights = Math.ceil(
+          (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / 
+          (1000 * 60 * 60 * 24)
+        );
+        
         setTimeout(() => {
-          setShowSuccessOptions(true);
-        }, 1000);
+          router.push(
+            `/reservations/confirmacion?id=${response.data.data._id}&nights=${nights}&total=${totalPrice}&checkInDate=${checkInDate}`
+          );
+        }, 2000);
       }
       
     } catch (error: any) {
@@ -542,6 +663,8 @@ function ReservationContinueContent() {
           className="special-requests-textarea"
         />
       </div>
+
+      <ReservationInfoCard />
 
       {error && (
         <div className="error-message">

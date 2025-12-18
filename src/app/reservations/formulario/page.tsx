@@ -79,6 +79,17 @@ function ReservationFormContent() {
           
           console.log('🏨 Habitaciones de categoría:', normalizedRooms);
           console.log('🏨 IDs de habitaciones cargadas:', normalizedRooms.map(room => ({ id: room._id, name: room.name, roomNumber: room.roomNumber })));
+          
+          // Debug: Verificar amenidades en cada habitación
+          normalizedRooms.forEach((room: any) => {
+            console.log(`🔍 Habitación ${room.roomNumber || room.name}:`, {
+              amenities: room.amenities,
+              amenitiesType: typeof room.amenities,
+              isArray: Array.isArray(room.amenities),
+              length: room.amenities?.length || 0
+            });
+          });
+          
           setRooms(normalizedRooms);
           
           // Cargar fechas ocupadas para cada habitación
@@ -106,12 +117,13 @@ function ReservationFormContent() {
           setOccupiedDates(occupiedDatesMap);
           console.log('📅 Mapa completo de fechas ocupadas:', occupiedDatesMap);
           
-          // Seleccionar automáticamente la primera habitación disponible
+          // Seleccionar automáticamente la primera habitación que no esté en mantenimiento
+          // (puede estar ocupada hoy, pero se puede reservar para otras fechas)
           if (normalizedRooms.length > 0) {
-            const firstAvailableRoom = normalizedRooms.find(room => room.isAvailable && !room.isMaintenance);
-            if (firstAvailableRoom) {
-              console.log('🎯 Seleccionando primera habitación disponible:', firstAvailableRoom._id);
-              setSelectedRoomId(firstAvailableRoom._id);
+            const firstSelectableRoom = normalizedRooms.find(room => !room.isMaintenance);
+            if (firstSelectableRoom) {
+              console.log('🎯 Seleccionando primera habitación seleccionable:', firstSelectableRoom._id);
+              setSelectedRoomId(firstSelectableRoom._id);
             }
           }
         } else {
@@ -253,42 +265,24 @@ function ReservationFormContent() {
                 if (Array.isArray(arr) && arr.length > 0) imageUrl = arr[0];
               } catch {}
             }
-            // Verificar disponibilidad básica (sin restricción de fechas)
+            // Verificar disponibilidad: solo considerar mantenimiento, NO la ocupación de hoy
+            // Las habitaciones pueden reservarse para otras fechas aunque estén ocupadas hoy
             const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
             const isOccupiedToday = isRoomOccupiedToday(habitacion._id);
-            const isAvailable = habitacion.isAvailable && !habitacion.isMaintenance;
+            const roomOccupiedDates = occupiedDates[habitacion._id] || [];
+            // Solo bloquear si está en mantenimiento, NO por ocupación de hoy
+            const isSelectable = !habitacion.isMaintenance;
             const isSelected = selectedRoomId === habitacion._id;
             
             console.log('🏨 Habitación', habitacion._id, ':', {
               name: habitacion.name,
               roomNumber: habitacion.roomNumber,
-              isAvailable: habitacion.isAvailable,
               isMaintenance: habitacion.isMaintenance,
               isOccupiedToday,
-              finalAvailable: isAvailable,
-              occupiedDates: occupiedDates[habitacion._id],
+              isSelectable,
+              occupiedDates: roomOccupiedDates,
               today,
-              status: isAvailable ? (isOccupiedToday ? 'Ocupada hoy' : 'Disponible') : habitacion.isMaintenance ? 'Mantenimiento' : 'No disponible'
-            });
-            
-            // Debug para todas las habitaciones
-            console.log(`🔍 DEBUG HABITACIÓN ${habitacion.roomNumber}:`, {
-              id: habitacion._id,
-              name: habitacion.name,
-              roomNumber: habitacion.roomNumber,
-              occupiedDates: occupiedDates[habitacion._id],
-              today,
-              isOccupiedToday,
-              isAvailable: habitacion.isAvailable,
-              isMaintenance: habitacion.isMaintenance,
-              finalStatus: isAvailable ? (isOccupiedToday ? 'Ocupada hoy' : 'Disponible') : habitacion.isMaintenance ? 'Mantenimiento' : 'No disponible',
-              // Debug adicional para verificar la comparación de fechas
-              dateComparison: {
-                occupiedDatesArray: occupiedDates[habitacion._id],
-                todayString: today,
-                includesToday: occupiedDates[habitacion._id]?.includes(today),
-                dateTypes: occupiedDates[habitacion._id]?.map(date => ({ date, type: typeof date }))
-              }
+              status: habitacion.isMaintenance ? 'Mantenimiento' : (isOccupiedToday ? 'Ocupada hoy' : 'Disponible')
             });
             
             return (
@@ -296,16 +290,16 @@ function ReservationFormContent() {
                 key={habitacion._id}
                 className="reserva-card"
                 style={{ 
-                  border: isSelected ? '3px solid #007bff' : isAvailable ? '1px solid #ddd' : '1px solid #ff6b6b',
+                  border: isSelected ? '3px solid #007bff' : isSelectable ? '1px solid #ddd' : '1px solid #ff6b6b',
                   borderRadius: 8, 
-                  cursor: isAvailable ? 'pointer' : 'not-allowed',
+                  cursor: isSelectable ? 'pointer' : 'not-allowed',
                   width: 320,
-                  opacity: isAvailable ? 1 : 0.6,
+                  opacity: isSelectable ? 1 : 0.6,
                   transition: 'all 0.3s ease',
                   transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                   boxShadow: isSelected ? '0 8px 25px rgba(0,123,255,0.3)' : '0 4px 15px rgba(0,0,0,0.1)',
                 }}
-                onClick={() => isAvailable && setSelectedRoomId(habitacion._id)}
+                onClick={() => isSelectable && setSelectedRoomId(habitacion._id)}
               >
                 <img
                   src={imageUrl}
@@ -317,8 +311,8 @@ function ReservationFormContent() {
                   <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'0.5rem'}}>
                     <h2 style={{ fontSize: 20, marginBottom: 8 }}>{habitacion.name}</h2>
                     <span style={{
-                      background: isAvailable ? (isOccupiedToday ? '#ffc107' : '#28a745') : '#dc3545',
-                      color: isAvailable && isOccupiedToday ? '#000' : 'white',
+                      background: habitacion.isMaintenance ? '#dc3545' : (isOccupiedToday ? '#ffc107' : '#28a745'),
+                      color: habitacion.isMaintenance ? 'white' : (isOccupiedToday ? '#000' : 'white'),
                       padding: '0.25rem 0.5rem',
                       borderRadius: '4px',
                       fontSize: '0.8rem',
@@ -329,7 +323,7 @@ function ReservationFormContent() {
                       minWidth: '80px',
                       textAlign: 'center'
                     }}>
-                      {isAvailable ? (isOccupiedToday ? 'Ocupada hoy' : 'Disponible') : habitacion.isMaintenance ? 'Mantenimiento' : 'No disponible'}
+                      {habitacion.isMaintenance ? 'Mantenimiento' : (isOccupiedToday ? 'Ocupada hoy' : 'Disponible')}
                     </span>
                   </div>
                   
@@ -346,35 +340,55 @@ function ReservationFormContent() {
                     <p style={{fontSize: '0.9rem', margin: '0.25rem 0'}}><strong>Cama:</strong> {habitacion.bedType}</p>
                   </div>
                   
-                  {habitacion.amenities && habitacion.amenities.length > 0 && (
-                    <div style={{marginBottom:'1rem'}}>
-                      <p style={{fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.5rem'}}>Incluye:</p>
-                      <div style={{display:'flex', flexWrap:'wrap', gap:'0.25rem'}}>
-                        {habitacion.amenities.slice(0, 3).map((amenity: any, index: number) => (
-                          <span key={index} style={{
-                            background:'#f8f9fa',
-                            padding:'0.2rem 0.4rem',
-                            borderRadius:'3px',
-                            fontSize:'0.75rem',
-                            border:'1px solid #dee2e6'
-                          }}>
-                            {amenity}
-                          </span>
-                        ))}
-                        {habitacion.amenities.length > 3 && (
-                          <span style={{
-                            background:'#e9ecef',
-                            padding:'0.2rem 0.4rem',
-                            borderRadius:'3px',
-                            fontSize:'0.75rem',
-                            color:'#6c757d'
-                          }}>
-                            +{habitacion.amenities.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {(() => {
+                    // Obtener amenidades: primero de la habitación, si no hay, usar las de la categoría
+                    const roomAmenities = habitacion.amenities || [];
+                    const categoryAmenities = selectedCategory?.standardAmenities || [];
+                    const amenities = roomAmenities.length > 0 ? roomAmenities : categoryAmenities;
+                    
+                    // Debug para ver qué amenidades tenemos
+                    console.log('🏨 Amenidades para habitación', habitacion.roomNumber, ':', {
+                      roomAmenities,
+                      categoryAmenities,
+                      finalAmenities: amenities,
+                      hasRoomAmenities: roomAmenities.length > 0,
+                      hasCategoryAmenities: categoryAmenities.length > 0
+                    });
+                    
+                    if (amenities && amenities.length > 0) {
+                      return (
+                        <div style={{marginBottom:'1rem'}}>
+                          <p style={{fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.5rem'}}>Incluye:</p>
+                          <div style={{display:'flex', flexWrap:'wrap', gap:'0.25rem'}}>
+                            {amenities.slice(0, 3).map((amenity: any, index: number) => (
+                              <span key={index} style={{
+                                background:'#f8f9fa',
+                                padding:'0.2rem 0.4rem',
+                                borderRadius:'3px',
+                                fontSize:'0.75rem',
+                                border:'1px solid #dee2e6',
+                                color: '#333'
+                              }}>
+                                {typeof amenity === 'string' ? amenity : JSON.stringify(amenity)}
+                              </span>
+                            ))}
+                            {amenities.length > 3 && (
+                              <span style={{
+                                background:'#e9ecef',
+                                padding:'0.2rem 0.4rem',
+                                borderRadius:'3px',
+                                fontSize:'0.75rem',
+                                color:'#6c757d'
+                              }}>
+                                +{amenities.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   
                   {isSelected && (
                     <div style={{ 

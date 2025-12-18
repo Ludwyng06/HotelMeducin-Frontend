@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+// Forzar renderizado dinámico (no SSR)
+export const dynamic = 'force-dynamic';
+
 export default function TestBackendPage() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

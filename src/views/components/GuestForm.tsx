@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { documentService } from '@services/documentService';
+import API from '@services/api';
 import type { DocumentType } from '@models/Document';
 import type { GuestData } from '@models/Reservation';
 
@@ -15,7 +16,14 @@ interface GuestFormProps {
 export default function GuestForm({ guest, documentTypes, onUpdate, index }: GuestFormProps) {
   const [documentError, setDocumentError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
+  const [phoneError, setPhoneError] = useState<string>('');
   const [validatingDocument, setValidatingDocument] = useState<boolean>(false);
+  const [validatingPhone, setValidatingPhone] = useState<boolean>(false);
+  const [loadingUser, setLoadingUser] = useState<boolean>(false);
+  const [userFound, setUserFound] = useState<boolean>(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const documentTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const phoneTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Validar documento en tiempo real (usa endpoint público que devuelve { exists: boolean })
   const validateDocument = async (documentNumber: string, documentType: string) => {
@@ -28,7 +36,7 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
     try {
       const exists = await documentService.checkDocumentExists(documentNumber, documentType);
       if (exists) {
-        setDocumentError('Este documento ya está registrado en el sistema');
+        setDocumentError('⚠️ Este documento ya está registrado en el sistema');
       } else {
         setDocumentError('');
       }
@@ -58,43 +66,278 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
     return emailRegex.test(email);
   };
 
+  // Función para buscar usuario por email
+  const searchUserByEmail = async (email: string) => {
+    if (!email || !validateEmail(email)) {
+      setUserFound(false);
+      return;
+    }
+
+    setLoadingUser(true);
+    try {
+      const response = await API.get(`/recepcionista/clients/search?email=${encodeURIComponent(email)}`);
+      
+      if (response.data.success && response.data.data) {
+        const userData = response.data.data;
+        
+        // Verificar si el email actual del formulario es diferente al email encontrado
+        // Si es diferente, significa que el usuario cambió el email y debemos limpiar y actualizar todos los campos
+        const emailChanged = guest.email && guest.email.toLowerCase() !== email.toLowerCase();
+        
+        const updates: Partial<GuestData> = {};
+        
+        // Actualizar el email con el valor correcto del backend (siempre para corregir posibles errores de tipeo)
+        if (userData.email) {
+          updates.email = userData.email;
+        }
+        
+        // Si el email cambió, limpiar todos los campos y autocompletar solo con los datos del nuevo usuario
+        if (emailChanged) {
+          // Limpiar todos los campos primero (establecerlos como vacíos o undefined)
+          updates.firstName = userData.firstName || '';
+          updates.lastName = userData.lastName || '';
+          updates.phoneNumber = userData.phoneNumber || '';
+          updates.documentType = userData.documentType || '';
+          updates.documentNumber = userData.documentNumber || '';
+          updates.nationality = userData.nationality || '';
+          updates.birthDate = userData.birthDate || '';
+        } else {
+          // Si el email es el mismo, solo autocompletar campos vacíos para no sobrescribir datos ya ingresados
+          if (!guest.firstName && userData.firstName) {
+            updates.firstName = userData.firstName;
+          }
+          if (!guest.lastName && userData.lastName) {
+            updates.lastName = userData.lastName;
+          }
+          if (!guest.phoneNumber && userData.phoneNumber) {
+            updates.phoneNumber = userData.phoneNumber;
+          }
+          if (!guest.documentType && userData.documentType) {
+            updates.documentType = userData.documentType;
+          }
+          if (!guest.documentNumber && userData.documentNumber) {
+            updates.documentNumber = userData.documentNumber;
+          }
+          if (!guest.nationality && userData.nationality) {
+            updates.nationality = userData.nationality;
+          }
+          if (!guest.birthDate && userData.birthDate) {
+            updates.birthDate = userData.birthDate;
+          }
+        }
+        
+        // Aplicar actualizaciones si hay alguna
+        if (Object.keys(updates).length > 0) {
+          onUpdate(updates);
+        }
+        
+        setUserFound(true);
+        // Ocultar mensaje después de 3 segundos
+        setTimeout(() => setUserFound(false), 3000);
+      } else {
+        setUserFound(false);
+      }
+    } catch (error: any) {
+      // Usuario no encontrado o error - no hacer nada
+      setUserFound(false);
+    } finally {
+      setLoadingUser(false);
+    }
+  };
+
   const handleDocumentNumberChange = (value: string) => {
     onUpdate({ documentNumber: value });
     
+    // Limpiar timeout anterior si existe
+    if (documentTimeoutRef.current) {
+      clearTimeout(documentTimeoutRef.current);
+    }
+    
+    // Limpiar error mientras el usuario escribe (solo si hay tipo seleccionado)
+    // Si no hay tipo, no mostrar error de formato aún
     if (guest.documentType) {
-      // Validar formato
-      if (!validateDocumentFormat(value, guest.documentType)) {
-        setDocumentError('Formato de documento inválido');
-        return;
-      }
+      setDocumentError('');
+      setValidatingDocument(false);
       
-      // Validar duplicados
-      validateDocument(value, guest.documentType);
+      if (value) {
+        // Validar formato inmediatamente solo si hay tipo seleccionado
+        if (!validateDocumentFormat(value, guest.documentType)) {
+          setDocumentError('Formato de documento inválido');
+          return;
+        }
+        
+        // Validar duplicados después de que el usuario termine de escribir (debounce)
+        documentTimeoutRef.current = setTimeout(() => {
+          validateDocument(value, guest.documentType);
+        }, 800); // Esperar 800ms después de que el usuario deje de escribir
+      }
+    } else {
+      // Si no hay tipo seleccionado, limpiar errores para permitir seleccionar tipo
+      setDocumentError('');
+      setValidatingDocument(false);
     }
   };
 
   const handleEmailChange = (value: string) => {
     onUpdate({ email: value });
+    setUserFound(false); // Resetear indicador cuando cambia el email
     
     if (value && !validateEmail(value)) {
       setEmailError('Formato de email inválido');
     } else {
       setEmailError('');
     }
+
+    // Limpiar timeout anterior si existe
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Buscar usuario después de que el usuario termine de escribir (debounce)
+    if (validateEmail(value)) {
+      searchTimeoutRef.current = setTimeout(() => {
+        searchUserByEmail(value);
+      }, 800); // Esperar 800ms después de que el usuario deje de escribir
+    }
   };
 
-  const handleDocumentTypeChange = (value: string) => {
-    onUpdate({ documentType: value });
-    setDocumentError(''); // Limpiar error al cambiar tipo
+  // Función para limpiar el formulario
+  const handleClearForm = () => {
+    // Limpiar todos los campos del formulario
+    onUpdate({
+      documentType: '',
+      documentNumber: '',
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      nationality: '',
+      phoneNumber: '',
+      email: '',
+      isCompleted: false
+    });
     
-    // Re-validar número si existe
-    if (guest.documentNumber) {
-      handleDocumentNumberChange(guest.documentNumber);
+    // Limpiar estados de validación
+    setDocumentError('');
+    setEmailError('');
+    setPhoneError('');
+    setUserFound(false);
+    
+    // Limpiar timeouts
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    if (documentTimeoutRef.current) {
+      clearTimeout(documentTimeoutRef.current);
+    }
+    if (phoneTimeoutRef.current) {
+      clearTimeout(phoneTimeoutRef.current);
+    }
+  };
+
+  // Limpiar timeouts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      if (documentTimeoutRef.current) {
+        clearTimeout(documentTimeoutRef.current);
+      }
+      if (phoneTimeoutRef.current) {
+        clearTimeout(phoneTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleDocumentTypeChange = (value: string) => {
+    // Limpiar errores primero para permitir el cambio
+    setDocumentError('');
+    setValidatingDocument(false);
+    
+    // Limpiar timeout anterior si existe
+    if (documentTimeoutRef.current) {
+      clearTimeout(documentTimeoutRef.current);
+    }
+    
+    // Actualizar el tipo de documento
+    onUpdate({ documentType: value });
+    
+    // Re-validar número si existe y hay un nuevo tipo seleccionado
+    if (guest.documentNumber && value) {
+      // Validar formato con el nuevo tipo
+      if (!validateDocumentFormat(guest.documentNumber, value)) {
+        setDocumentError('Formato de documento inválido para el tipo seleccionado');
+        return;
+      }
+      
+      // Validar duplicados después de un breve delay
+      documentTimeoutRef.current = setTimeout(() => {
+        validateDocument(guest.documentNumber, value);
+      }, 800);
+    }
+  };
+
+  // Validar teléfono contra backend (usuario/cliente existente)
+  const validatePhone = async (phoneNumber: string) => {
+    setPhoneError('');
+    if (!phoneNumber) {
+      setValidatingPhone(false);
+      return;
+    }
+
+    setValidatingPhone(true);
+    try {
+      // Pasamos también el email actual para permitir el mismo teléfono
+      // si pertenece al mismo cliente (mismo email)
+      const response = await API.get(
+        `/recepcionista/clients/check-phone?phoneNumber=${encodeURIComponent(
+          phoneNumber,
+        )}&email=${encodeURIComponent(guest.email || '')}`,
+      );
+
+      if (response.data?.exists) {
+        setPhoneError(
+          response.data.message ||
+            '⚠️ Este teléfono ya está registrado en el sistema para otro cliente',
+        );
+      } else {
+        setPhoneError('');
+      }
+    } catch (error: any) {
+      // En caso de error de red u otro, no bloqueamos, solo mostramos mensaje genérico
+      console.error('Error validando teléfono:', error);
+      if (error.response?.status !== 404) {
+        setPhoneError('Error al validar el teléfono. Intenta nuevamente.');
+      }
+    } finally {
+      setValidatingPhone(false);
+    }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    onUpdate({ phoneNumber: value });
+    
+    // Limpiar timeout anterior si existe
+    if (phoneTimeoutRef.current) {
+      clearTimeout(phoneTimeoutRef.current);
+    }
+    
+    // Limpiar error mientras el usuario escribe
+    setPhoneError('');
+    setValidatingPhone(false);
+
+    // Validar solo si tiene una longitud mínima razonable
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length >= 7) {
+      // Validar después de que el usuario termine de escribir (debounce)
+      phoneTimeoutRef.current = setTimeout(() => {
+        validatePhone(value);
+      }, 800); // Esperar 800ms después de que el usuario deje de escribir
     }
   };
 
   const isFormValid = (): boolean => {
-    return !documentError && !emailError && 
+    return !documentError && !emailError && !phoneError &&
            !!guest.documentType && !!guest.documentNumber && 
            !!guest.firstName && !!guest.lastName && 
            !!guest.birthDate && !!guest.nationality && 
@@ -107,7 +350,7 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
     if (isValid !== guest.isCompleted) {
       onUpdate({ isCompleted: isValid });
     }
-  }, [guest, documentError, emailError, onUpdate]);
+  }, [guest, documentError, emailError, phoneError, onUpdate]);
 
   return (
     <div className="guest-form">
@@ -116,7 +359,7 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
           <label htmlFor={`documentType-${index}`}>Tipo de Documento *</label>
           <select
             id={`documentType-${index}`}
-            value={guest.documentType}
+            value={guest.documentType || ''}
             onChange={(e) => handleDocumentTypeChange(e.target.value)}
             className="form-select"
             required
@@ -142,10 +385,13 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
             required
           />
           {validatingDocument && (
-            <div className="validation-spinner">Validando...</div>
+            <div className="validation-spinner">🔍 Validando documento...</div>
           )}
           {documentError && (
             <div className="error-text">{documentError}</div>
+          )}
+          {!validatingDocument && !documentError && guest.documentNumber && guest.documentType && validateDocumentFormat(guest.documentNumber, guest.documentType) && (
+            <div className="success-text">✅ Documento válido</div>
           )}
         </div>
       </div>
@@ -212,28 +458,56 @@ export default function GuestForm({ guest, documentTypes, onUpdate, index }: Gue
             id={`phoneNumber-${index}`}
             type="tel"
             value={guest.phoneNumber}
-            onChange={(e) => onUpdate({ phoneNumber: e.target.value })}
-            className="form-input"
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            className={`form-input ${phoneError ? 'error' : ''}`}
             placeholder="Ej: +57 300 123 4567"
             required
           />
+          {validatingPhone && (
+            <div className="validation-spinner">🔍 Validando teléfono...</div>
+          )}
+          {phoneError && (
+            <div className="error-text">{phoneError}</div>
+          )}
+          {!validatingPhone && !phoneError && guest.phoneNumber && guest.phoneNumber.replace(/\D/g, '').length >= 7 && (
+            <div className="success-text">✅ Teléfono válido</div>
+          )}
         </div>
 
         <div className="form-group">
           <label htmlFor={`email-${index}`}>Email *</label>
-          <input
-            id={`email-${index}`}
-            type="email"
-            value={guest.email}
-            onChange={(e) => handleEmailChange(e.target.value)}
-            className={`form-input ${emailError ? 'error' : ''}`}
-            placeholder="ejemplo@correo.com"
-            required
-          />
+          <div className="email-input-wrapper">
+            <input
+              id={`email-${index}`}
+              type="email"
+              value={guest.email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              className={`form-input ${emailError ? 'error' : ''} ${userFound ? 'user-found' : ''}`}
+              placeholder="ejemplo@correo.com"
+              required
+            />
+            {loadingUser && (
+              <span className="email-status-indicator loading">🔍 Buscando...</span>
+            )}
+            {userFound && !loadingUser && (
+              <span className="email-status-indicator found">✅ Usuario encontrado - Campos autocompletados</span>
+            )}
+          </div>
           {emailError && (
             <div className="error-text">{emailError}</div>
           )}
         </div>
+      </div>
+
+      <div className="form-actions">
+        <button
+          type="button"
+          onClick={handleClearForm}
+          className="btn-clear-form"
+          title="Limpiar todos los campos del formulario"
+        >
+          🗑️ Limpiar Formulario
+        </button>
       </div>
 
       <div className="form-status">

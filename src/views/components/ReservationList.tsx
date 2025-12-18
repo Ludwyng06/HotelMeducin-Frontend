@@ -42,6 +42,15 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
     setSelectedId(null);
   };
 
+  // Función helper para verificar si se puede cancelar (más de 24 horas antes del check-in)
+  const canCancelReservation = (checkInDate: string): boolean => {
+    if (!checkInDate) return false;
+    const checkIn = new Date(checkInDate);
+    const now = new Date();
+    const hoursUntilCheckIn = (checkIn.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntilCheckIn >= 24;
+  };
+
   return (
     <div>
       <div style={{
@@ -58,9 +67,12 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
           style={{
             minWidth: '220px',
             padding: '0.5rem',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '1rem'
+            border: '1px solid var(--color-border)',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text)',
+            outline: 'none'
           }}
         />
         <input
@@ -69,66 +81,92 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
           onChange={e => setSearchDate(e.target.value)}
           style={{
             padding: '0.5rem',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            fontSize: '1rem'
+            border: '1px solid var(--color-border)',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text)',
+            outline: 'none'
           }}
         />
       </div>
       <div style={{
         width: '100%',
         overflowX: 'auto',
-        border: '1px solid #e2e8f0',
-        borderRadius: '8px'
+        border: '1px solid var(--color-border)',
+        borderRadius: '8px',
+        background: 'var(--color-surface)',
+        boxShadow: 'var(--shadow-md)'
       }}>
         <table style={{
           width: '100%',
           borderCollapse: 'collapse',
-          backgroundColor: 'white'
+          backgroundColor: 'var(--color-surface)'
         }}>
           <thead>
-            <tr style={{ backgroundColor: '#f7fafc' }}>
+            <tr style={{ 
+              backgroundColor: 'var(--color-primary)',
+              background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)'
+            }}>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Habitación</th>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Check-in</th>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Check-out</th>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Estado</th>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Total</th>
               <th style={{
                 padding: '1rem',
                 textAlign: 'left',
-                fontWeight: '600',
-                color: '#2d3748',
-                borderBottom: '2px solid #e2e8f0'
+                fontWeight: '700',
+                color: 'white',
+                borderBottom: '2px solid var(--color-primary-dark)',
+                fontSize: '0.95rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
               }}>Acciones</th>
             </tr>
           </thead>
@@ -138,8 +176,9 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
                 <td colSpan={6} style={{
                   padding: '2rem',
                   textAlign: 'center',
-                  color: '#666',
-                  fontStyle: 'italic'
+                  color: 'var(--color-text-light)',
+                  fontStyle: 'italic',
+                  background: 'var(--color-surface)'
                 }}>Cargando...</td>
               </tr>
             ) : filtered.length === 0 ? (
@@ -147,104 +186,123 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
                 <td colSpan={6} style={{
                   padding: '2rem',
                   textAlign: 'center',
-                  color: '#666',
-                  fontStyle: 'italic'
+                  color: 'var(--color-text-light)',
+                  fontStyle: 'italic',
+                  background: 'var(--color-surface)'
                 }}>No hay reservas.</td>
               </tr>
             ) : filtered.map((res, idx) => (
               <tr key={res._id || res.id} style={{
-                backgroundColor: idx % 2 === 0 ? '#f8f9fa' : 'white',
-                borderBottom: '1px solid #e2e8f0'
+                backgroundColor: idx % 2 === 0 ? 'var(--color-surface)' : 'var(--color-bg)',
+                borderBottom: '1px solid var(--color-border)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(49, 130, 206, 0.1)';
+                e.currentTarget.style.transform = 'scale(1.01)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = idx % 2 === 0 ? 'var(--color-surface)' : 'var(--color-bg)';
+                e.currentTarget.style.transform = 'scale(1)';
               }}>
                 <td style={{
                   padding: '1rem',
-                  color: '#2d3748',
-                  fontWeight: '500'
+                  color: 'var(--color-text)',
+                  fontWeight: '600'
                 }}>{res.room?.name || res.roomId?.name || 'Habitación'}</td>
                 <td style={{
                   padding: '1rem',
-                  color: '#4a5568'
+                  color: 'var(--color-text-light)'
                 }}>{res.checkInDate?.slice(0,10) || '-'}</td>
                 <td style={{
                   padding: '1rem',
-                  color: '#4a5568'
+                  color: 'var(--color-text-light)'
                 }}>{res.checkOutDate?.slice(0,10) || '-'}</td>
                 <td style={{ padding: '1rem' }}>
-                  {res.status === 'COMPLETED' && (
+                  {/* COMPLETED - Verde oscuro como en el grafo */}
+                  {(res.status === 'COMPLETED' || res.status === 'completed') && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#c6f6d5',
-                      color: '#22543d'
-                    }}>Finalizada</span>
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#059669',
+                      color: '#ffffff',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(5, 150, 105, 0.3)'
+                    }}>Completada</span>
                   )}
-                  {res.status === 'EXPIRED' && (
+                  {/* EXPIRED - Amarillo como en el grafo */}
+                  {(res.status === 'EXPIRED' || res.status === 'expired') && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#fed7d7',
-                      color: '#c53030'
-                    }}>Caducada</span>
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#f59e0b',
+                      color: '#1f2937',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
+                    }}>Expirada</span>
                   )}
-                  {res.status === 'CANCELLED' && (
+                  {/* CANCELLED - Rojo como en el grafo */}
+                  {(res.status === 'CANCELLED' || res.status === 'cancelled') && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#fed7d7',
-                      color: '#c53030'
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#ef4444',
+                      color: '#ffffff',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
                     }}>Cancelada</span>
                   )}
-                  {res.status === 'PENDING' && (
+                  {/* PENDING - Azul como en el grafo */}
+                  {(res.status === 'PENDING' || res.status === 'pending') && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#fef5e7',
-                      color: '#c05621'
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#3b82f6',
+                      color: '#ffffff',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(59, 130, 246, 0.3)'
                     }}>Pendiente</span>
                   )}
-                  {res.status === 'CONFIRMED' && (
+                  {/* CONFIRMED - Verde como en el grafo */}
+                  {(res.status === 'CONFIRMED' || res.status === 'confirmed') && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#bee3f8',
-                      color: '#2b6cb0'
-                    }}>Activa</span>
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#10b981',
+                      color: '#ffffff',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(16, 185, 129, 0.3)'
+                    }}>Confirmada</span>
                   )}
-                  {res.status === 'pending' && (
+                  {/* Estado desconocido - solo mostrar si no coincide con ningún estado conocido */}
+                  {!['COMPLETED', 'EXPIRED', 'CANCELLED', 'PENDING', 'CONFIRMED', 'completed', 'expired', 'cancelled', 'pending', 'confirmed'].includes(res.status) && (
                     <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#fef5e7',
-                      color: '#c05621'
-                    }}>Pendiente</span>
-                  )}
-                  {res.status === 'confirmed' && (
-                    <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      backgroundColor: '#bee3f8',
-                      color: '#2b6cb0'
-                    }}>Activa</span>
+                      padding: '0.4rem 0.9rem',
+                      borderRadius: '20px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: '#6b7280',
+                      color: '#ffffff',
+                      display: 'inline-block',
+                      boxShadow: '0 2px 4px rgba(107, 114, 128, 0.3)'
+                    }}>{res.status || 'Sin estado'}</span>
                   )}
                 </td>
                 <td style={{
                   padding: '1rem',
-                  color: '#2d3748',
-                  fontWeight: '600'
+                  color: 'var(--color-text)',
+                  fontWeight: '700',
+                  fontSize: '1.05rem'
                 }}>${res.totalPrice}</td>
                 <td style={{
                   padding: '1rem',
@@ -252,53 +310,10 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
                   gap: '0.5rem',
                   alignItems: 'center'
                 }}>
-                  {(['PENDING','CONFIRMED','pending','confirmed'].includes(res.status) && new Date(res.checkOutDate) >= new Date()) && (
-                    <>
-                      <button
-                        onClick={() => router.push(`/reservations/formulario?edit=${res._id || res.id}`)}
-                        title="Editar"
-                        style={{
-                          background: '#3182ce',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '0.5rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2c5aa0'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3182ce'}
-                      >
-                        <FaEdit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleAskDelete(res._id || res.id)}
-                        title="Eliminar"
-                        style={{
-                          background: '#e53e3e',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '0.5rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'background-color 0.2s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c53030'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e53e3e'}
-                      >
-                        <FaTrash size={16} />
-                      </button>
-                    </>
-                  )}
+                  {/* Botón Ver detalles - siempre visible para todas las reservas */}
                   <button
                     onClick={() => router.push(`/reservations/confirmacion?id=${res._id || res.id}`)}
-                    title="Ver"
+                    title="Ver detalles"
                     style={{
                       background: '#38a169',
                       color: 'white',
@@ -316,6 +331,88 @@ const ReservationList: React.FC<ReservationListProps> = ({ reservas, loading, on
                   >
                     <FaSearch size={16} />
                   </button>
+
+                  {/* Acciones solo para reservas PENDIENTES */}
+                  {(['PENDING', 'pending'].includes(res.status) && new Date(res.checkOutDate) >= new Date()) && (
+                    <>
+                      {/* Botón Editar - solo para pendientes */}
+                      <button
+                        onClick={() => router.push(`/reservations/formulario?edit=${res._id || res.id}`)}
+                        title="Editar reserva"
+                        style={{
+                          background: '#3182ce',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '0.5rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2c5aa0'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3182ce'}
+                      >
+                        <FaEdit size={16} />
+                      </button>
+
+                      {/* Botón Cancelar - solo si faltan más de 24 horas */}
+                      {canCancelReservation(res.checkInDate) ? (
+                        <button
+                          onClick={() => handleAskDelete(res._id || res.id)}
+                          title="Cancelar reserva"
+                          style={{
+                            background: '#e53e3e',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '0.5rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c53030'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e53e3e'}
+                        >
+                          <FaTrash size={16} />
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          title="No se puede cancelar: faltan menos de 24 horas para el check-in"
+                          style={{
+                            background: '#9ca3af',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '0.5rem',
+                            cursor: 'not-allowed',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: 0.6
+                          }}
+                        >
+                          <FaTrash size={16} />
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Reservas CONFIRMADAS: solo ver, sin editar ni cancelar */}
+                  {(['CONFIRMED', 'confirmed'].includes(res.status) && new Date(res.checkOutDate) >= new Date()) && (
+                    <span style={{
+                      fontSize: '0.85rem',
+                      color: '#6b7280',
+                      fontStyle: 'italic',
+                      padding: '0.25rem 0.5rem'
+                    }}>
+                      Solo lectura
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

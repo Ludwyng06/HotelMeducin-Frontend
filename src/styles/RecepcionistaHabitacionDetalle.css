@@ -1,0 +1,1075 @@
+/* Recepcionista Habitación Detalle Styles */
+
+.recepcionista-habitacion-detalle {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Tema oscuro (azul) */
+[data-theme="dark"] .recepcionista-habitacion-detalle {
+  background: var(--color-bg, #0F172A);
+  color: var(--color-text, #F1F5F9);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+[data-theme="dark"] .page-header {
+  border-bottom-color: var(--color-border, #475569);
+}
+
+.page-header h1 {
+  color: #002d62;
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .page-header h1 {
+  color: var(--color-primary-light, #60A5FA);
+}
+
+.btn-back-professional {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #002d62 0%, #00509d 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 45, 98, 0.2);
+}
+
+.btn-back-professional:hover {
+  background: linear-gradient(135deg, #00509d 0%, #002d62 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 45, 98, 0.3);
+}
+
+.btn-back-professional:active {
+  transform: translateY(0);
+}
+
+.btn-back-professional .btn-icon {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.btn-back-professional .btn-text {
+  letter-spacing: 0.3px;
+}
+
+.error-alert,
+.success-alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.error-alert {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.success-alert {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.room-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+}
+
+/* Información de la Habitación */
+.room-info-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mantener tarjetas blancas incluso en tema oscuro para mejor contraste */
+[data-theme="dark"] .room-info-section {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: #1e293b;
+}
+
+.room-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.room-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+[data-theme="dark"] .room-header-info {
+  border-bottom-color: #e5e7eb;
+}
+
+.room-header-info h2 {
+  color: #002d62;
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .room-info-section .room-header-info h2 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.room-status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.room-status-badge.available {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.room-status-badge.occupied {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.room-status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.room-status-badge.expired {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.room-status-badge.maintenance {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.room-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.room-specs p {
+  margin: 0;
+  color: #475569;
+}
+
+/* Mantener colores oscuros en tarjetas blancas */
+[data-theme="dark"] .room-info-section .room-specs p {
+  color: #334155;
+  font-weight: 500;
+}
+
+.room-specs strong {
+  color: #002d62;
+}
+
+[data-theme="dark"] .room-info-section .room-specs strong {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.room-description,
+.room-amenities {
+  margin-top: 1rem;
+}
+
+.room-description h3,
+.room-amenities h3 {
+  color: #002d62;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+}
+
+/* Mantener colores oscuros en tarjetas blancas */
+[data-theme="dark"] .room-info-section .room-description h3,
+[data-theme="dark"] .room-info-section .room-amenities h3 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.room-description p {
+  color: #475569;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .room-info-section .room-description p {
+  color: #334155;
+  font-weight: 500;
+}
+
+.room-amenities ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.room-amenities li {
+  padding: 0.5rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  color: #475569;
+}
+
+/* Mantener colores oscuros en tarjetas blancas */
+[data-theme="dark"] .room-info-section .room-amenities li {
+  background: #e2e8f0;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Sección de Reserva Pendiente */
+.reservation-pending-section,
+.reservation-occupied-section,
+.reservation-maintenance-section,
+.new-reservation-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mantener tarjetas blancas incluso en tema oscuro para mejor contraste */
+[data-theme="dark"] .reservation-pending-section,
+[data-theme="dark"] .reservation-occupied-section,
+[data-theme="dark"] .reservation-maintenance-section,
+[data-theme="dark"] .new-reservation-section {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  color: #1e293b;
+}
+
+.reservation-pending-section h2,
+.reservation-occupied-section h2,
+.reservation-maintenance-section h2,
+.new-reservation-section h2 {
+  color: #002d62;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .reservation-pending-section h2,
+[data-theme="dark"] .reservation-occupied-section h2,
+[data-theme="dark"] .reservation-maintenance-section h2,
+[data-theme="dark"] .new-reservation-section h2 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.reservation-info-card {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+[data-theme="dark"] .reservation-info-card {
+  background: #f1f5f9;
+}
+
+.reservation-info-card h3 {
+  color: #002d62;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .reservation-info-card h3 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.reservation-info-card p {
+  margin: 0.5rem 0;
+  color: #475569;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .reservation-info-card p {
+  color: #334155;
+  font-weight: 500;
+}
+
+.expired-warning {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Mantener color rojo oscuro en tarjetas blancas */
+[data-theme="dark"] .expired-warning {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.confirm-reservation-form {
+  margin-top: 1.5rem;
+}
+
+.confirm-reservation-form h3 {
+  color: #002d62;
+  margin-bottom: 1rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .confirm-reservation-form h3 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+/* Formulario de Nueva Reserva */
+.reservation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .new-reservation-section .form-group label {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  background: white;
+  color: #1e293b;
+}
+
+/* Mantener inputs blancos con texto oscuro en tarjetas blancas */
+[data-theme="dark"] .new-reservation-section .form-group input,
+[data-theme="dark"] .new-reservation-section .form-group select,
+[data-theme="dark"] .new-reservation-section .form-group textarea {
+  background: white;
+  color: #1e293b;
+  border-color: #d1d5db;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #002d62;
+}
+
+.readonly-input {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* Mantener readonly inputs con fondo claro en tarjetas blancas */
+[data-theme="dark"] .readonly-input {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .form-hint {
+  color: #475569;
+  font-weight: 500;
+}
+
+.guests-section {
+  margin-top: 2rem;
+}
+
+.guests-section h3 {
+  color: #002d62;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .new-reservation-section .guests-section h3 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+.guest-form-card {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Mantener tarjetas blancas incluso en tema oscuro */
+[data-theme="dark"] .guest-form-card {
+  background: white;
+  border-color: #e5e7eb;
+  color: #1e293b;
+}
+
+.guest-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.guest-form-card h4 {
+  color: #002d62;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .guest-form-card h4 {
+  color: #002d62;
+  font-weight: 700;
+}
+
+/* Estilos para el formulario de huéspedes */
+.guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.guest-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.guest-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.guest-form .form-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+/* Mantener color oscuro en tarjetas blancas */
+[data-theme="dark"] .guest-form .form-group label {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.guest-form .form-input,
+.guest-form .form-select {
+  padding: 0.75rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+  color: #1e293b;
+}
+
+/* Mantener inputs blancos con texto oscuro en tarjetas blancas */
+[data-theme="dark"] .guest-form .form-input,
+[data-theme="dark"] .guest-form .form-select {
+  background: white;
+  color: #1e293b;
+  border-color: #d1d5db;
+}
+
+.guest-form .form-input:focus,
+.guest-form .form-select:focus {
+  outline: none;
+  border-color: #002d62;
+  box-shadow: 0 0 0 3px rgba(0, 45, 98, 0.1);
+}
+
+.guest-form .form-input.error {
+  border-color: #ef4444;
+}
+
+.guest-form .error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.guest-form .success-text {
+  color: #10b981;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.guest-form .validation-spinner {
+  color: #3b82f6;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.guest-form .form-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.guest-form .btn-clear-form {
+  padding: 0.5rem 1rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.guest-form .btn-clear-form:hover {
+  background-color: #dc2626;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+}
+
+.guest-form .btn-clear-form:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
+}
+
+.guest-form .form-status {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.guest-form .status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.guest-form .status-incomplete {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Estilos para autocompletado de email */
+.guest-form .email-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.guest-form .email-status-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.guest-form .email-status-indicator.loading {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.guest-form .email-status-indicator.found {
+  color: #059669;
+  background-color: rgba(5, 150, 105, 0.1);
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0;
+  }
+  10%, 90% {
+    opacity: 1;
+  }
+}
+
+.guest-form .form-input.user-found {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+  padding-right: 200px;
+}
+
+.guest-form .form-input.user-found:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+@media (max-width: 768px) {
+  .guest-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .guest-form .email-status-indicator {
+    position: static;
+    transform: none;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  .guest-form .form-input.user-found {
+    padding-right: 0.75rem;
+  }
+
+  .guest-form .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guest-form .btn-clear-form {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .guest-form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .reservation-form-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .btn-large {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+.btn-primary {
+  background: #002d62;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #00509d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 45, 98, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.reservation-form-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+}
+
+/* Mantener borde en tarjetas blancas */
+[data-theme="dark"] .reservation-form-actions {
+  border-top-color: #e5e7eb;
+}
+
+.recepcionista-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #002d62;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+[data-theme="dark"] .loading-spinner {
+  border-color: var(--color-border, #475569);
+  border-top-color: var(--color-primary-light, #60A5FA);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.error-container h2 {
+  color: #dc2626;
+}
+
+/* Calendario */
+.calendar-group {
+  position: relative;
+}
+
+.calendar-button {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.3s ease;
+}
+
+.calendar-button:hover:not(:disabled) {
+  border-color: #002d62;
+}
+
+.calendar-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.calendar-icon {
+  font-size: 1.2rem;
+}
+
+.calendar-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+}
+
+/* Modal de Confirmación */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+[data-theme="dark"] .modal-content {
+  background: var(--color-surface, #1E293B);
+  color: var(--color-text, #F1F5F9);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h2 {
+  color: #002d62;
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+[data-theme="dark"] .modal-content h2 {
+  color: var(--color-primary-light, #60A5FA);
+}
+
+.modal-content p {
+  color: #64748b;
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .modal-content p {
+  color: var(--color-text-light, #CBD5E1);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel-modal {
+  padding: 0.75rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel-modal:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.btn-cancel-modal:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-confirm-cancel {
+  padding: 0.75rem 1.5rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm-cancel:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-confirm-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Botones de Acción de Reserva */
+.reservation-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .recepcionista-habitacion-detalle {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .btn-back-professional {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .room-header-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .room-specs {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-popup {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 2rem);
+    max-width: 400px;
+  }
+
+  .reservation-actions {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+}
+

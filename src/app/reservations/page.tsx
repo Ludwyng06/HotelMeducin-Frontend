@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 export default function ReservasPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
 
@@ -29,20 +30,68 @@ export default function ReservasPage() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        // Cargar solo categorías
+        console.log('📦 Cargando categorías...');
+        
         const categoriesData = await roomCategoryService.getAllCategories();
         
-        console.log('🏷️ Datos de categorías obtenidos:', categoriesData);
+        console.log('🏷️ Datos de categorías obtenidos (raw):', categoriesData);
+        console.log('🏷️ Tipo de datos:', typeof categoriesData);
+        console.log('🏷️ Es array?:', Array.isArray(categoriesData));
         
         const normalizedCategories = normalizeCategories(categoriesData);
         
         console.log('🏷️ Categorías normalizadas:', normalizedCategories);
+        console.log('🏷️ Cantidad de categorías:', normalizedCategories.length);
         
-        setCategories(normalizedCategories);
-      } catch (error) {
+        if (normalizedCategories.length === 0) {
+          console.warn('⚠️ No se encontraron categorías después de normalizar');
+          setError('No hay categorías disponibles en el sistema.');
+        } else {
+          console.log('✅ Categorías cargadas exitosamente:', normalizedCategories.length);
+          setCategories(normalizedCategories);
+        }
+      } catch (error: any) {
         console.error('❌ Error al cargar categorías:', error);
         setCategories([]);
+        
+        // Mostrar mensaje de error más amigable y específico
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        
+        // Determinar el tipo de error
+        const isNetworkError = error?.isNetworkError || 
+                              error?.code === 'ERR_NETWORK' || 
+                              error?.code === 'ECONNREFUSED' ||
+                              error?.code === 'ERR_INTERNET_DISCONNECTED' ||
+                              error?.message?.includes('Network Error') ||
+                              error?.message?.includes('Failed to fetch');
+        
+        const isTimeout = error?.name === 'AbortError' || 
+                         error?.code === 'ECONNABORTED' ||
+                         error?.message?.includes('timeout');
+        
+        if (isNetworkError) {
+          if (error?.code === 'ECONNREFUSED') {
+            setError(`No se pudo conectar con el backend en ${apiUrl}. El servidor no está corriendo o no está escuchando en ese puerto.`);
+          } else {
+            setError(`Error de conexión con el backend en ${apiUrl}. Verifica que el servidor esté corriendo y accesible.`);
+          }
+        } else if (isTimeout) {
+          setError(`El backend no respondió a tiempo. Verifica que esté corriendo en ${apiUrl} y que no esté sobrecargado.`);
+        } else if (error?.response?.status === 404) {
+          setError('El endpoint de categorías no fue encontrado en el backend. Verifica la configuración del servidor.');
+        } else if (error?.response?.status === 403 || error?.response?.status === 401) {
+          setError('No tienes permisos para acceder a las categorías. Verifica tu sesión.');
+        } else if (error?.response?.status === 500) {
+          setError('Error interno del servidor. Por favor, contacta al administrador o revisa los logs del backend.');
+        } else if (error?.response?.status) {
+          const message = error.response.data?.message || error.response.data?.error || 'Error desconocido';
+          setError(`Error ${error.response.status}: ${message}`);
+        } else {
+          setError(`Error al cargar las categorías: ${error?.message || 'Error desconocido'}. Por favor, intenta recargar la página.`);
+        }
       } finally {
         setLoading(false);
       }
@@ -67,11 +116,50 @@ export default function ReservasPage() {
 
   return (
     <main className="main-reservas">
-      <h2 style={{marginBottom:'1rem', marginTop:'0', color:'#1a365d', fontSize:'2rem', fontWeight:'600', textAlign:'center'}}>Categorías de Habitaciones</h2>
+      <h2 style={{marginBottom:'1rem', marginTop:'0', color:'var(--color-primary-dark)', fontSize:'2rem', fontWeight:'600', textAlign:'center'}}>Categorías de Habitaciones</h2>
       <section className="reservas-grid">
         {loading ? (
           <div style={{textAlign:'center', gridColumn:'1/-1', padding:'1rem'}}>
             Cargando categorías...
+          </div>
+        ) : error ? (
+          <div style={{
+            textAlign:'center', 
+            gridColumn:'1/-1', 
+            padding:'2rem',
+            backgroundColor:'#fff3cd',
+            borderRadius:'8px',
+            border:'1px solid #ffc107',
+            color:'#856404'
+          }}>
+            <h3 style={{marginBottom:'1rem', color:'#856404', fontSize:'1.5rem'}}>⚠️ Error de Conexión</h3>
+            <p style={{marginBottom:'1rem', fontSize:'1rem'}}>{error}</p>
+            <div style={{marginBottom:'1rem', fontSize:'0.9rem', color:'#856404'}}>
+              <p><strong>Pasos para solucionar:</strong></p>
+              <ol style={{textAlign:'left', display:'inline-block', marginTop:'0.5rem'}}>
+                <li>Verifica que el backend esté corriendo en <code style={{backgroundColor:'#fff', padding:'2px 6px', borderRadius:'3px'}}>http://localhost:3000</code></li>
+                <li>Abre la consola del navegador (F12) para ver más detalles</li>
+                <li>Intenta acceder directamente a <code style={{backgroundColor:'#fff', padding:'2px 6px', borderRadius:'3px'}}>http://localhost:3000/health</code></li>
+              </ol>
+            </div>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{
+                padding:'0.75rem 1.5rem',
+                backgroundColor:'#1a365d',
+                color:'white',
+                border:'none',
+                borderRadius:'4px',
+                cursor:'pointer',
+                fontSize:'1rem',
+                fontWeight:'600',
+                transition:'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2c5282'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#1a365d'}
+            >
+              🔄 Reintentar
+            </button>
           </div>
         ) : categories.length > 0 ? (
           categories.map((category) => (

@@ -7,7 +7,16 @@ interface AvailabilityCalendarProps {
   onDateSelect: (date: string) => void;
   selectedDate?: string;
   disabled?: boolean;
+  key?: string | number; // Agregar key para forzar re-render cuando cambie
 }
+
+// Función helper para formatear fecha sin problemas de zona horaria
+const formatDateToLocalString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function AvailabilityCalendar({ 
   roomId, 
@@ -57,7 +66,8 @@ export default function AvailabilityCalendar({
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
+      date.setHours(0, 0, 0, 0); // Normalizar hora para comparaciones consistentes
+      const dateString = formatDateToLocalString(date); // Usar función helper para evitar problemas de zona horaria
       
       const isCurrentMonth = date.getMonth() === month;
       const isPast = date < today;
@@ -80,7 +90,12 @@ export default function AvailabilityCalendar({
   };
 
   const handleDateClick = (dateString: string, isOccupied: boolean, isPast: boolean) => {
-    if (disabled || isOccupied || isPast) return;
+    console.log('📅 handleDateClick - fecha:', dateString, 'ocupada:', isOccupied, 'pasada:', isPast, 'disabled:', disabled);
+    if (disabled || isOccupied || isPast) {
+      console.log('❌ Fecha bloqueada - disabled:', disabled, 'ocupada:', isOccupied, 'pasada:', isPast);
+      return;
+    }
+    console.log('✅ Fecha seleccionada, llamando onDateSelect con:', dateString);
     onDateSelect(dateString);
   };
 

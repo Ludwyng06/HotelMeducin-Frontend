@@ -256,27 +256,58 @@ export default function ReservationSimpleForm({ roomId, rooms }: Props) {
         {/* Resumen de precio */}
         {totalPrice > 0 && (
           <div style={{
-            background: '#f7fafc',
-            border: '2px solid #e2e8f0',
+            background: 'var(--color-surface, #ffffff)',
+            border: '2px solid var(--color-border, #e2e8f0)',
             borderRadius: '12px',
             padding: '1.5rem',
-            marginBottom: '1.5rem'
+            marginBottom: '1.5rem',
+            boxShadow: 'var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1))'
           }}>
-            <h4 style={{ margin: '0 0 1rem 0', color: '#2d3748', fontSize: '1.1rem' }}>
+            <h4 style={{ 
+              margin: '0 0 1rem 0', 
+              color: 'var(--color-text, #1E293B)', 
+              fontSize: '1.1rem',
+              fontWeight: '600'
+            }}>
               💰 Resumen de Precio
             </h4>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span>Precio por noche:</span>
-              <span>${selectedRoom?.price}</span>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '0.75rem',
+              fontSize: '0.95rem'
+            }}>
+              <span style={{ color: 'var(--color-text-light, #64748B)' }}>Precio por noche:</span>
+              <span style={{ color: 'var(--color-text, #1E293B)', fontWeight: '600' }}>${selectedRoom?.price}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span>Noches:</span>
-              <span>{nights} noche{nights > 1 ? 's' : ''}</span>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '0.75rem',
+              fontSize: '0.95rem'
+            }}>
+              <span style={{ color: 'var(--color-text-light, #64748B)' }}>Noches:</span>
+              <span style={{ color: 'var(--color-text, #1E293B)', fontWeight: '600' }}>{nights} noche{nights > 1 ? 's' : ''}</span>
             </div>
-            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0.5rem 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600', fontSize: '1.1rem', color: '#2d3748' }}>
-              <span>Total:</span>
-              <span>${totalPrice}</span>
+            <hr style={{ 
+              border: 'none', 
+              borderTop: '2px solid var(--color-border, #e2e8f0)', 
+              margin: '1rem 0' 
+            }} />
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              fontWeight: '700', 
+              fontSize: '1.2rem',
+              marginTop: '0.5rem',
+              alignItems: 'center'
+            }}>
+              <span style={{ color: 'var(--color-text, #1E293B)' }}>Total:</span>
+              <span style={{ 
+                color: 'var(--color-primary, #1E3A8A)', 
+                fontSize: '1.4rem',
+                fontWeight: '700'
+              }}>${totalPrice.toFixed(2)}</span>
             </div>
           </div>
         )}

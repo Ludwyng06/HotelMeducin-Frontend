@@ -98,9 +98,68 @@
   background-color: #004494;
 }
 
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.login-divider span {
+  padding: 0 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  background-color: white;
+}
+
+/* Google Login Button */
+.google-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: white;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.google-login-button:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.google-login-button:active {
+  background-color: #f1f3f4;
+}
+
+.google-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
 /* Pie */
 .login-footer {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   font-size: 0.9rem;
 }
 
@@ -297,5 +356,26 @@
   
   .success-title {
     font-size: 1.25rem;
+  }
+}
+
+/* Animaciones para Google Login */
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
   }
 }
