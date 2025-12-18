@@ -4,6 +4,8 @@ import { useSearchParams } from 'next/navigation';
 import ReservationSimpleForm from '@components/ReservationSimpleForm';
 import { roomService } from '@services/roomService';
 import { roomCategoryService } from '@services/roomCategoryService';
+import { TemporalUtils } from '@/utils/temporal.utils';
+import { Temporal } from '@js-temporal/polyfill';
 
 function ReservationFormContent() {
   const searchParams = useSearchParams();
@@ -46,12 +48,13 @@ function ReservationFormContent() {
 
   // Función para verificar si una habitación está ocupada hoy
   const isRoomOccupiedToday = (roomId: string) => {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = TemporalUtils.today();
+    const todayString = TemporalUtils.formatDate(today); // YYYY-MM-DD
     const roomOccupiedDates = occupiedDates[roomId] || [];
-    const isOccupied = roomOccupiedDates.includes(today);
+    const isOccupied = roomOccupiedDates.includes(todayString);
     
     console.log('🔍 Verificando ocupación para habitación', roomId, ':', {
-      today,
+      today: todayString,
       roomOccupiedDates,
       isOccupied
     });
@@ -106,7 +109,7 @@ function ReservationFormContent() {
                 console.log('📅 Formato de fechas ocupadas:', occupiedDatesMap[room._id].map(date => ({
                   date,
                   type: typeof date,
-                  isToday: date === new Date().toISOString().split('T')[0]
+                  isToday: date === TemporalUtils.formatDate(TemporalUtils.today())
                 })));
               }
             } catch (error) {
@@ -149,7 +152,7 @@ function ReservationFormContent() {
                 console.log('📅 Formato de fechas ocupadas:', occupiedDatesMap[room._id].map(date => ({
                   date,
                   type: typeof date,
-                  isToday: date === new Date().toISOString().split('T')[0]
+                  isToday: date === TemporalUtils.formatDate(TemporalUtils.today())
                 })));
               }
             } catch (error) {
@@ -267,7 +270,7 @@ function ReservationFormContent() {
             }
             // Verificar disponibilidad: solo considerar mantenimiento, NO la ocupación de hoy
             // Las habitaciones pueden reservarse para otras fechas aunque estén ocupadas hoy
-            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const today = TemporalUtils.formatDate(TemporalUtils.today()); // YYYY-MM-DD
             const isOccupiedToday = isRoomOccupiedToday(habitacion._id);
             const roomOccupiedDates = occupiedDates[habitacion._id] || [];
             // Solo bloquear si está en mantenimiento, NO por ocupación de hoy
@@ -408,8 +411,25 @@ function ReservationFormContent() {
               </div>
             );
           }) : (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-              No hay habitaciones disponibles
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '2rem', 
+              background: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '8px',
+              margin: '2rem auto',
+              maxWidth: '600px'
+            }}>
+              <h3 style={{ color: '#856404', marginBottom: '1rem' }}>⚠️ No hay habitaciones disponibles</h3>
+              <p style={{ color: '#856404', marginBottom: '0.5rem' }}>
+                {tipoParam 
+                  ? 'No se encontraron habitaciones para esta categoría en la base de datos.'
+                  : 'No se encontraron habitaciones en la base de datos.'
+                }
+              </p>
+              <p style={{ color: '#856404', fontSize: '0.9rem' }}>
+                Si tienes datos locales, ejecuta la migración de datos a Docker.
+              </p>
             </div>
           )}
         </div>

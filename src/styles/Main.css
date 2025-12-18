@@ -1,12 +1,15 @@
 .main {
+  max-width: 1280px;
+  margin: 0 auto;
   padding: 0 2rem;
   font-family: var(--font-main);
-  background-color: var(--color-surface);
+  background-color: var(--color-bg);
 }
 
 .hero {
   text-align: center;
-  padding-bottom: 2rem;
+  padding: 3rem 0 2rem;
+  margin-bottom: 2rem;
 }
 
 .hero h1 {
@@ -24,16 +27,20 @@
 .hero-img {
   width: 100%;
   height: auto;
-  max-width: 900px;
-  border-radius: 1rem;
-  margin: 1rem auto;
+  max-width: 100%;
+  border-radius: 1.5rem;
+  margin: 2rem auto;
   display: block;
+  box-shadow: 0 8px 24px rgba(0, 45, 98, 0.12);
 }
 
 .texto-promocional {
-  margin-top: 1rem;
+  margin-top: 2rem;
   color: var(--color-primary);
-  padding: 1rem;
+  padding: 2rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .texto-promocional h2 {
@@ -54,16 +61,20 @@
   display: inline-block;
   background-color: var(--color-primary-dark);
   color: var(--color-surface);
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
   text-decoration: none;
   font-weight: bold;
-  transition: background-color 0.3s ease;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 45, 98, 0.2);
   font-family: var(--font-main);
 }
 
 .btn-reserva:hover {
   background-color: var(--color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 45, 98, 0.3);
 }
 
 /* Sección de destinos */
@@ -90,21 +101,25 @@
 
 .destinos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   padding: 0 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .destino-card {
   background-color: var(--color-surface);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 45, 98, 0.08);
-  transition: transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 45, 98, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-border);
 }
 
 .destino-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0, 45, 98, 0.15);
 }
 
 .destino-img {

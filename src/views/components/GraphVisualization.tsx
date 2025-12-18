@@ -175,9 +175,30 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       
       // Si es una reservación, usar color según status
       if (node.type === 'Reservation' || baseGroup === 'reservation') {
-        const status = node.properties?.status || 'pending';
+        // Normalizar status a minúsculas para consistencia
+        const rawStatus = node.properties?.status || 'pending';
+        const status = rawStatus.toLowerCase();
         const colorKey = `reservation_${status}`;
-        return nodeColors[colorKey] || nodeColors.reservation;
+        const color = nodeColors[colorKey] || nodeColors.reservation;
+        
+        // Debug para reservaciones confirmadas
+        if (status === 'confirmed' || rawStatus === 'confirmed' || rawStatus === 'CONFIRMED') {
+          console.log(`🎨 [getNodeColor] Reservación confirmada detectada:`, {
+            nodeId: node.id,
+            rawStatus,
+            normalizedStatus: status,
+            colorKey,
+            color,
+            properties: node.properties
+          });
+        }
+        
+        // Log si no se encuentra el color correcto
+        if (!nodeColors[colorKey] && status !== 'pending') {
+          console.warn(`⚠️ [getNodeColor] Color no encontrado para status: ${status}, usando color por defecto: ${color}`);
+        }
+        
+        return color;
       }
       
       return nodeColors[baseGroup] || '#6b7280';
@@ -291,7 +312,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         align: 'middle',
       },
       smooth: {
+        enabled: true,
         type: 'continuous',
+        roundness: 0.2,
       },
     }));
 
@@ -318,7 +341,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           strokeColor: '#ffffff',
         },
         smooth: {
+          enabled: true,
           type: 'continuous',
+          roundness: 0.2,
         },
       },
       physics: {

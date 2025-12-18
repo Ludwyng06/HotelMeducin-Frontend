@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { reservationService } from '@services/reservationService';
+import { TemporalUtils } from '@/utils/temporal.utils';
+import { Temporal } from '@js-temporal/polyfill';
 
 interface AvailabilityCalendarProps {
   roomId: string;
@@ -28,6 +30,34 @@ export default function AvailabilityCalendar({
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
+  // Estado para forzar re-render cuando cambie el día
+  const [todayDate, setTodayDate] = useState<string>(() => TemporalUtils.formatDate(TemporalUtils.today()));
+
+  // Actualizar la fecha de hoy periódicamente para detectar cambios de día
+  useEffect(() => {
+    const updateToday = () => {
+      const currentToday = TemporalUtils.formatDate(TemporalUtils.today());
+      if (currentToday !== todayDate) {
+        console.log('📅 [Calendar] Día cambió de', todayDate, 'a', currentToday);
+        setTodayDate(currentToday);
+      }
+    };
+
+    // Verificar inmediatamente al montar
+    updateToday();
+    
+    // Verificar cada minuto para detectar cambios de día
+    const interval = setInterval(updateToday, 60000); // Cada minuto
+    
+    // También verificar cada 10 segundos para detectar cambios más rápido
+    // (útil si el usuario tiene el calendario abierto durante el cambio de día)
+    const fastCheck = setInterval(updateToday, 10000); // Cada 10 segundos
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(fastCheck);
+    };
+  }, [todayDate]);
 
   // Cargar fechas ocupadas
   useEffect(() => {
@@ -50,34 +80,62 @@ export default function AvailabilityCalendar({
     loadOccupiedDates();
   }, [roomId]);
 
-  // Generar días del mes
-  const generateDays = () => {
+  // Generar días del mes usando Temporal
+  // IMPORTANTE: Usar useMemo para recalcular cuando cambien currentMonth, todayDate u occupiedDates
+  const days = React.useMemo(() => {
     const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    const month = currentMonth.getMonth() + 1; // Temporal usa meses 1-12
+    const firstDay = Temporal.PlainDate.from({ year, month, day: 1 });
+    const lastDay = firstDay.toPlainYearMonth().daysInMonth;
+    
+    // Calcular el primer día de la semana del calendario (domingo = 0)
+    const firstDayOfWeek = Temporal.PlainDate.from({ year, month, day: 1 }).dayOfWeek % 7;
+    const startDate = firstDay.subtract({ days: firstDayOfWeek });
 
-    const days = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const daysArray = [];
+    // IMPORTANTE: Obtener la fecha de hoy directamente usando Temporal API
+    // Esto asegura que siempre tengamos la fecha correcta según la zona horaria de Bogotá
+    const today = TemporalUtils.today();
+    const todayString = TemporalUtils.formatDate(today);
+    
+    // Log SIEMPRE visible para verificar la fecha actual
+    console.log(`📅 [Calendar] ===== FECHA ACTUAL (Bogotá): ${todayString} =====`);
+    
+    // Log para debug - verificar que estamos usando la fecha correcta
+    if (todayString !== todayDate) {
+      console.warn(`⚠️ [Calendar] Desincronización - Estado todayDate: ${todayDate}, Fecha real: ${todayString}`);
+    }
 
     for (let i = 0; i < 42; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      date.setHours(0, 0, 0, 0); // Normalizar hora para comparaciones consistentes
-      const dateString = formatDateToLocalString(date); // Usar función helper para evitar problemas de zona horaria
+      const date = startDate.add({ days: i });
+      const dateString = TemporalUtils.formatDate(date);
       
-      const isCurrentMonth = date.getMonth() === month;
-      const isPast = date < today;
+      const isCurrentMonth = date.month === month;
+      // Comparar fechas: si date < today, entonces está en el pasado
+      // Usar compareDates que retorna: -1 si date1 < date2, 0 si son iguales, 1 si date1 > date2
+      const comparison = TemporalUtils.compareDates(date, today);
+      const isPast = comparison < 0; // Solo días anteriores a hoy están en el pasado
+      
+      // Debug para fechas problemáticas (día 17 y 18) - SIEMPRE loguear para diagnóstico
+      if (dateString === '2025-12-17' || dateString === '2025-12-18') {
+        console.log(`📅 [Calendar Debug] Fecha: ${dateString}, Hoy: ${todayString}, Comparación: ${comparison}, isPast: ${isPast}, isCurrentMonth: ${isCurrentMonth}`);
+        console.log(`📅 [Calendar Debug] date objeto:`, date.toString(), `today objeto:`, today.toString());
+      }
+      
+      // También verificar si TODAS las fechas del 1-16 están marcadas como pasado
+      if (isCurrentMonth && date.day <= 16) {
+        if (!isPast) {
+          console.warn(`⚠️ [Calendar] Fecha ${dateString} debería estar en el pasado pero isPast=${isPast}`);
+        }
+      }
       const isOccupied = occupiedDates.includes(dateString);
       const isSelected = selectedDate === dateString;
       const isHovered = hoveredDate === dateString;
 
-      days.push({
-        date,
+      daysArray.push({
+        date: TemporalUtils.plainDateToDate(date), // Convertir PlainDate a Date para compatibilidad
         dateString,
+        dayNumber: date.day, // Usar directamente el día del PlainDate para evitar problemas de zona horaria
         isCurrentMonth,
         isPast,
         isOccupied,
@@ -86,16 +144,24 @@ export default function AvailabilityCalendar({
       });
     }
 
-    return days;
-  };
+    return daysArray;
+  }, [currentMonth, todayDate, occupiedDates, selectedDate, hoveredDate]); // Incluir todayDate para forzar recalculación cuando cambie el día
 
   const handleDateClick = (dateString: string, isOccupied: boolean, isPast: boolean) => {
     console.log('📅 handleDateClick - fecha:', dateString, 'ocupada:', isOccupied, 'pasada:', isPast, 'disabled:', disabled);
+    
+    // Debug específico para día 17
+    if (dateString === '2025-12-17') {
+      console.log('🔍 [Debug Día 17] Click detectado en día 17');
+      console.log('🔍 [Debug Día 17] isPast:', isPast, 'isOccupied:', isOccupied, 'disabled:', disabled);
+    }
+    
     if (disabled || isOccupied || isPast) {
       console.log('❌ Fecha bloqueada - disabled:', disabled, 'ocupada:', isOccupied, 'pasada:', isPast);
       return;
     }
     console.log('✅ Fecha seleccionada, llamando onDateSelect con:', dateString);
+    console.log('📤 [onDateSelect] Enviando fecha:', dateString, 'tipo:', typeof dateString);
     onDateSelect(dateString);
   };
 
@@ -106,7 +172,14 @@ export default function AvailabilityCalendar({
   };
 
   const getDateStatus = (day: any) => {
-    if (day.isPast) return 'past';
+    // IMPORTANTE: Verificar isPast primero - tiene la mayor prioridad
+    if (day.isPast) {
+      // Debug para día 17
+      if (day.dateString === '2025-12-17') {
+        console.log(`📅 [getDateStatus] Día 17 detectado como pasado - isPast: ${day.isPast}`);
+      }
+      return 'past';
+    }
     if (day.isOccupied) return 'occupied';
     if (day.isSelected) return 'selected';
     if (day.isHovered) return 'hovered';
@@ -179,7 +252,7 @@ export default function AvailabilityCalendar({
     );
   }
 
-  const days = generateDays();
+  // Los días ya están calculados en el useMemo arriba
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -265,22 +338,30 @@ export default function AvailabilityCalendar({
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '0.25rem'
       }}>
-        {days.map((day, index) => (
-          <div
-            key={index}
-            style={getDateStyle(day)}
-            onClick={() => handleDateClick(day.dateString, day.isOccupied, day.isPast)}
-            onMouseEnter={() => setHoveredDate(day.dateString)}
-            onMouseLeave={() => setHoveredDate(null)}
-            title={
-              day.isOccupied ? 'Ocupado' :
-              day.isPast ? 'Fecha pasada' :
-              'Disponible'
-            }
-          >
-            {day.date.getDate()}
-          </div>
-        ))}
+        {days.map((day, index) => {
+          // Debug para día 17
+          if (day.dateString === '2025-12-17') {
+            const status = getDateStatus(day);
+            const style = getDateStyle(day);
+            console.log(`📅 [Render] Día 17 - isPast: ${day.isPast}, status: ${status}, backgroundColor: ${style.backgroundColor}, color: ${style.color}`);
+          }
+          return (
+            <div
+              key={index}
+              style={getDateStyle(day)}
+              onClick={() => handleDateClick(day.dateString, day.isOccupied, day.isPast)}
+              onMouseEnter={() => setHoveredDate(day.dateString)}
+              onMouseLeave={() => setHoveredDate(null)}
+              title={
+                day.isOccupied ? 'Ocupado' :
+                day.isPast ? 'Fecha pasada' :
+                'Disponible'
+              }
+            >
+              {day.dayNumber || day.date.getDate()}
+            </div>
+          );
+        })}
       </div>
 
       {/* Leyenda */}

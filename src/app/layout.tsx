@@ -1,5 +1,9 @@
 // src/app/layout.tsx
 'use client';
+// IMPORTAR PRIMERO - antes que cualquier otro código
+import '@js-temporal/polyfill';
+import '../config/temporal.config';
+
 import "../styles/globals.css";
 import "../styles/theme.css";
 import { Geist, Geist_Mono } from "next/font/google";

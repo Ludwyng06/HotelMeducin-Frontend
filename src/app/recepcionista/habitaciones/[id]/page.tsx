@@ -30,8 +30,23 @@ const formatDateToString = (date: Date): string => {
 // Función para formatear string YYYY-MM-DD a formato local para mostrar
 const formatDateForDisplay = (dateString: string): string => {
   if (!dateString) return 'Seleccionar fecha';
+  
+  // Debug para día 17
+  if (dateString === '2025-12-17') {
+    console.log('🔍 [formatDateForDisplay] Formateando día 17:', dateString);
+  }
+  
   const date = parseLocalDate(dateString);
-  return date.toLocaleDateString('es-CO');
+  const formatted = date.toLocaleDateString('es-CO');
+  
+  // Verificar que el día no cambió al parsear
+  const dayFromString = parseInt(dateString.split('-')[2]);
+  const dayFromDate = date.getDate();
+  if (dayFromString !== dayFromDate) {
+    console.warn(`⚠️ [formatDateForDisplay] Día cambió al parsear: ${dayFromString} -> ${dayFromDate} para fecha ${dateString}`);
+  }
+  
+  return formatted;
 };
 
 // Función para encontrar la primera fecha disponible después de hoy
@@ -259,8 +274,21 @@ export default function RecepcionistaHabitacionDetalle() {
   };
 
   const handleCheckInChange = (date: string) => {
-    console.log('📅 handleCheckInChange llamado con fecha:', date);
-    console.log('📅 Fecha actual checkInDate:', checkInDate);
+    console.log('📥 [handleCheckInChange] Recibido fecha:', date, 'tipo:', typeof date);
+    console.log('📥 [handleCheckInChange] Fecha actual checkInDate:', checkInDate);
+    
+    // Debug específico para día 17
+    if (date === '2025-12-17') {
+      console.log('🔍 [Debug Día 17] handleCheckInChange recibió día 17');
+    }
+    
+    // Verificar si la fecha cambió al parsearla
+    const parsedDate = parseLocalDate(date);
+    const formattedBack = formatDateToString(parsedDate);
+    if (date !== formattedBack) {
+      console.warn(`⚠️ [handleCheckInChange] Fecha cambió al parsear: ${date} -> ${formattedBack}`);
+    }
+    
     setCheckInDate(date);
     setShowCheckInCalendar(false);
     if (checkOutDate && room?.price) {

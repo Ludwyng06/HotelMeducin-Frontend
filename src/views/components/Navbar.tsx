@@ -32,10 +32,13 @@ const Navbar = () => {
     setIsClient(true);
   }, []);
 
+  // Determinar si es un usuario regular (sin roles especiales: admin, superadmin, recepcionista)
+  const isRegularUser = isClient && (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'recepcionista'));
+
   return (
     <div className="navbar">
       <div className="navbar-content">
-        <div className="navbar-menu">
+        <div className={`navbar-menu ${isRegularUser ? 'navbar-menu-centered' : ''}`}>
           {menuItems.map((item) => (
             <div
               key={item.title}

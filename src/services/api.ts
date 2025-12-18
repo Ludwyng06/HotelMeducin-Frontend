@@ -2,7 +2,19 @@ import axios from 'axios';
 
 // Forzar HTTP para desarrollo local (no HTTPS)
 const getBaseURL = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  // Si estamos en el servidor (SSR), usar el nombre del servicio Docker
+  // Si estamos en el cliente (navegador), usar localhost
+  const isServer = typeof window === 'undefined';
+  
+  let url: string;
+  if (isServer) {
+    // En el servidor Next.js dentro de Docker, usar el nombre del servicio
+    url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://backend:3000';
+  } else {
+    // En el cliente (navegador), usar localhost porque el puerto está mapeado al host
+    url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  }
+  
   // Asegurar que siempre use HTTP, no HTTPS
   return url.replace('https://', 'http://').replace(':3443', ':3000');
 };

@@ -10,23 +10,37 @@
   position: relative;
   z-index: 10;
   font-family: var(--font-main);
+  overflow: visible;
 }
 
 .navbar-content {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1280px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: center;
+  overflow: visible;
 }
 
 .navbar-menu {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   position: relative;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: visible;
+}
+
+/* Centrar el navbar para usuarios regulares */
+.navbar-menu-centered {
+  margin: 0 auto;
+  justify-content: center;
 }
 
 .nav-link-wrapper {
   position: relative;
+  flex-shrink: 0;
 }
 
 /* 🔹 Estilo uniforme para todos los enlaces del navbar */
@@ -34,13 +48,14 @@
   position: relative;
   padding: 1rem 0.5rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--color-primary);
   transition: background-color 0.3s, color 0.3s;
   border-radius: 0.5rem 0.5rem 0 0;
   text-decoration: none;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .nav-link:hover,
@@ -75,13 +90,14 @@
   box-shadow: 0 8px 32px rgba(0, 45, 98, 0.12);
   padding: 0.5rem 0.25rem;
   min-width: 220px;
-  z-index: 20;
+  z-index: 1000;
   border-radius: 0 0 1rem 1rem;
   border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   margin-top: 2px;
+  overflow: visible;
 }
 
 .dropdown-item {

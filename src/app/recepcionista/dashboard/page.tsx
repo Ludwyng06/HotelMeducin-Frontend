@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@context/AuthContext';
 import API from '@services/api';
 import '@styles/RecepcionistaDashboard.css';
+import { TemporalUtils } from '@/utils/temporal.utils';
 
 interface DashboardData {
   date?: string; // Fecha para la cual se muestran las métricas
@@ -41,7 +42,10 @@ export default function RecepcionistaDashboard() {
   const [cashRegisterData, setCashRegisterData] = useState<CashRegisterData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showCashRegister, setShowCashRegister] = useState(false);
-  const [cashRegisterDate, setCashRegisterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [cashRegisterDate, setCashRegisterDate] = useState(() => {
+    const { TemporalUtils } = require('@/utils/temporal.utils');
+    return TemporalUtils.formatDate(TemporalUtils.today());
+  });
   
   // Referencia para mantener el valor actual de la fecha en el intervalo
   const cashRegisterDateRef = React.useRef(cashRegisterDate);
@@ -150,7 +154,7 @@ export default function RecepcionistaDashboard() {
             <h2>Dashboard Recepcionista</h2>
             <p>
               Métricas diarias de reservas
-              {dashboardData?.date && dashboardData.date !== new Date().toISOString().split('T')[0] && (
+              {dashboardData?.date && dashboardData.date !== TemporalUtils.formatDate(TemporalUtils.today()) && (
                 <span style={{ marginLeft: '0.5rem', color: '#059669', fontWeight: 600 }}>
                   - {formatDate(dashboardData.date)}
                 </span>
@@ -198,7 +202,7 @@ export default function RecepcionistaDashboard() {
                 <h3>Pendientes</h3>
                 <p className="metric-value">{dashboardData.todayPending}</p>
                 <span className="metric-label">
-                  {dashboardData.date && dashboardData.date !== new Date().toISOString().split('T')[0]
+                  {dashboardData.date && dashboardData.date !== TemporalUtils.formatDate(TemporalUtils.today())
                     ? 'Reservas del día seleccionado'
                     : 'Reservas del día'}
                 </span>
@@ -210,7 +214,7 @@ export default function RecepcionistaDashboard() {
                 <h3>Confirmadas</h3>
                 <p className="metric-value">{dashboardData.todayConfirmed}</p>
                 <span className="metric-label">
-                  {dashboardData.date && dashboardData.date !== new Date().toISOString().split('T')[0]
+                  {dashboardData.date && dashboardData.date !== TemporalUtils.formatDate(TemporalUtils.today())
                     ? 'Día seleccionado'
                     : 'Hoy'}
                 </span>
@@ -222,7 +226,7 @@ export default function RecepcionistaDashboard() {
                 <h3>Canceladas</h3>
                 <p className="metric-value">{dashboardData.todayCancelled}</p>
                 <span className="metric-label">
-                  {dashboardData.date && dashboardData.date !== new Date().toISOString().split('T')[0]
+                  {dashboardData.date && dashboardData.date !== TemporalUtils.formatDate(TemporalUtils.today())
                     ? 'Día seleccionado'
                     : 'Hoy'}
                 </span>

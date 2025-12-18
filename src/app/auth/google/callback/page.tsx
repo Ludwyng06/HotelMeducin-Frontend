@@ -3,12 +3,12 @@
 // Forzar renderizado dinámico (no SSR)
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@context/AuthContext';
 import '@styles/Login.css';
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
@@ -51,27 +51,29 @@ export default function GoogleCallbackPage() {
                 const user = JSON.parse(decodeURIComponent(userParam));
                 localStorage.setItem('user', JSON.stringify(user));
                 sessionStorage.setItem('auth_user', JSON.stringify(user));
-                
-                // OPTIMIZACIÓN: Ya tenemos el usuario completo del callback
-                // No necesitamos refrescar - el AuthContext detectará el token automáticamente
-                // Eliminar refreshUser() ahorra una llamada HTTP innecesaria (~50-100ms)
               } catch (e) {
                 console.warn('No se pudo parsear el usuario, se obtendrá del servidor');
               }
             }
 
-            // OPTIMIZACIÓN: Eliminar refreshUser() - ya tenemos todos los datos
-            // El AuthContext manejará la autenticación cuando detecte el token
-            // Esto ahorra una llamada HTTP adicional y mejora la velocidad
+            // IMPORTANTE: Actualizar el AuthContext después de guardar el token
+            // Esto asegura que el estado de autenticación se actualice inmediatamente
+            // y el usuario no tenga que iniciar sesión dos veces
+            try {
+              await refreshUser();
+            } catch (error) {
+              console.warn('Error al refrescar usuario, pero el token está guardado:', error);
+              // Continuar de todas formas ya que el token está guardado
+            }
           }
 
           setStatus('success');
           setMessage('¡Autenticación exitosa! Redirigiendo...');
 
-          // OPTIMIZACIÓN: Redirigir más rápido y usar replace para no guardar en historial
+          // Redirigir después de asegurar que el AuthContext se actualizó
           setTimeout(() => {
             router.replace('/'); // replace en lugar de push para no guardar en historial
-          }, 200); // Reducido de 500ms a 200ms para mejor UX
+          }, 300); // Dar tiempo suficiente para que refreshUser complete
       } catch (error: any) {
         console.error('Error en callback de Google:', error);
         setStatus('error');
@@ -86,7 +88,7 @@ export default function GoogleCallbackPage() {
 
     handleCallback();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, refreshUser]); // Incluir refreshUser en dependencias para evitar warnings
 
   return (
     <div className="login-container">
@@ -131,6 +133,31 @@ export default function GoogleCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="login-container">
+        <div className="login-overlay"></div>
+        <div className="login-card">
+          <div className="success-message">
+            <div className="success-icon" style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" strokeDasharray="62.83" strokeDashoffset="62.83">
+                  <animate attributeName="stroke-dashoffset" dur="1.5s" values="62.83;0" fill="freeze" />
+                </circle>
+              </svg>
+            </div>
+            <h2 className="success-title" style={{ color: '#4285F4' }}>Cargando...</h2>
+            <p className="success-text">Procesando autenticación con Google...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }
 

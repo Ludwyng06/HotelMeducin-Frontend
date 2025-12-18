@@ -83,7 +83,7 @@ body {
 }
 
 .main {
-  background-color: #ffffff;
+  background-color: var(--color-bg);
 }
 
 .footer {
