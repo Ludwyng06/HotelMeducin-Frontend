@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Forzar HTTP para desarrollo local (no HTTPS)
+// HTTPS para desarrollo local (con certificados mkcert)
 const getBaseURL = () => {
   // Si estamos en el servidor (SSR), usar el nombre del servicio Docker
   // Si estamos en el cliente (navegador), usar localhost
@@ -9,14 +9,14 @@ const getBaseURL = () => {
   let url: string;
   if (isServer) {
     // En el servidor Next.js dentro de Docker, usar el nombre del servicio
-    url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://backend:3000';
+    // En desarrollo local, usar HTTPS
+    url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3443';
   } else {
-    // En el cliente (navegador), usar localhost porque el puerto está mapeado al host
-    url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    // En el cliente (navegador), usar HTTPS localhost para desarrollo local
+    url = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3443';
   }
   
-  // Asegurar que siempre use HTTP, no HTTPS
-  return url.replace('https://', 'http://').replace(':3443', ':3000');
+  return url;
 };
 
 // Configuración base de axios
